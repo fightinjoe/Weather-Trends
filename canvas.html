@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Canvas Primer - Example: Draw a triangle using paths</title>
+    <script type="text/javascript" charset="utf-8" src="canvas.js"></script>
+  </head>
+  <body>
+    <p><canvas id="myCanvas" width="1000" height="800">Your browser does not have 
+    support for Canvas. You should see:</canvas></p>
+  </body>
+  <script type="text/javascript" charset="utf-8">
+    var t = new Temps({ canvas:'myCanvas', width:30 });
+    t.drawTemp({max:100,min:10,high:97,low:54});
+  </script>
+</html>
