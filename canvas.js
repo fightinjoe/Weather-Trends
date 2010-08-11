@@ -99,7 +99,7 @@ var Temps = function( config ) {
     var tCount = Math.ceil( (opts.max-opts.min)/step );
 
     // calculate the offset
-    var xOffset = Math.floor(tCount/2) * _get('width');
+    var xOffset = Math.floor(tCount/2) * (_get('width') / 2);
 
     // draw the triangles, making sure to choose the right color
     var orientation = true,
@@ -108,7 +108,7 @@ var Temps = function( config ) {
         color;
 
     for(var i=0;i<tCount;i++) {
-      color = '#' + _getColorForTemp( temp );
+      color = (temp <= opts.high && temp >= opts.low ) ? '#' + _getColorForTemp( temp ) : null;
       pts   = orientation ? _drawDown( pts[2], color ) : _drawUp( pts[2], color );
 
       orientation = !orientation;
@@ -123,6 +123,7 @@ var Temps = function( config ) {
   /*== Triangle Drawing Methods ==*/
 
   _drawDown = function( point, color ){
+    color = color || '#000000';
     var points = [point];
     points.push( { x: point.x+_get('x'),     y: point.y } );
     points.push( { x: point.x+(_get('x')/2), y: point.y+_get('y') } );
@@ -134,6 +135,7 @@ var Temps = function( config ) {
   };
 
   _drawUp = function( point, color ){
+    color = color || '#202020';
     var points = [point];
     points.push( { x: point.x-(_get('x')/2), y: point.y-_get('y') } );
     points.push( { x: point.x-_get('x'),      y: point.y } );
