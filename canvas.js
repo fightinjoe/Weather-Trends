@@ -174,7 +174,7 @@ var Temps = function( config ) {
   /*== External Methods ==*/
 
   this.getHeight = function( min, max ) {
-    this.getWidth(min,max) * Math.sqrt(0.75);
+    return self.getWidth(min,max) * 2 * Math.sqrt(0.75);
   };
 
   this.getWidth = function( min, max, offset ) {
@@ -297,7 +297,7 @@ var Chart = function( temps ) {
         hi = t.getHeight(l,h);
 
     cv[0].width = wi;
-    cv[0].height = wi;
+    cv[0].height = hi;
 
     _set('width',wi);
     _set('height',hi);
@@ -312,10 +312,13 @@ var Chart = function( temps ) {
         max = Math.floor(_get('max')/10*10);
 
     for(var i=min;i<=max;i=i+10) {
-      var t = $('<li>'+i+'0&deg;</li>').appendTo(ta);
+      var t = $('<li>'+i+'&deg;</li>').appendTo(ta),
+          b = _get('temps').degreeToPixel((i)-_get('min'));
       t.css({
-        position:'absolute',
-        bottom: _get('temps').degreeToPixel((i*10)-_get('min')) + 'px'
+        position: 'absolute',
+        bottom:    b + 'px',
+        textAlign:'right',
+        right: (_get('width') - (b/Math.sqrt(0.75)*0.5)) + 'px'
       })
     }
   };

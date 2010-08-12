@@ -1,8 +1,24 @@
 body {
   background:black;
   color:White;
+  font-size:Arial;
+}
+
+ul, li {
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+li {
+}
+
+.tempContainer {
+  position:relative;
+  margin-left:50px;
+  float:left;
 }
 
 canvas {
-  background:Gray;
+  background:#202020;
 }
