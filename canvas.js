@@ -1,4 +1,5 @@
-var M = Math;
+var M = Math,
+ sq75 = M.sqrt(0.75);
 
 var Color = function( opts ) {
   var _s = this;
@@ -76,7 +77,7 @@ var Temps = function( config ) {
 
     minTemp : -10,
 
-    margin : 10
+    margin : 5
   };
 
   var COLORS = [
@@ -174,7 +175,7 @@ var Temps = function( config ) {
   /*== External Methods ==*/
 
   this.getHeight = function( min, max ) {
-    return _s.getWidth(min,max) * 2 * M.sqrt(0.75);
+    return _s.getWidth(min,max) * 2 * sq75;
   };
 
   this.getWidth = function( min, max, offset ) {
@@ -197,7 +198,7 @@ var Temps = function( config ) {
   };
 
   this.degreeToPixel = function( degs ) {
-    return degs * ((_get('width')*M.sqrt(0.75)/2) * _get('per10') / 10);
+    return degs * ((_get('width')*sq75/2) * _get('per10') / 10);
   }
 
   /*== Initialize ==*/
@@ -206,7 +207,7 @@ var Temps = function( config ) {
     _set('width', config.width, true);
 
     _set('x', _get('width') * 1);
-    _set('y', _get('width') * M.sqrt(0.75));
+    _set('y', _get('width') * sq75);
 
     _set('canvas', $( config.canvas )[0]);
 
@@ -268,36 +269,35 @@ var Chart = function( temps ) {
     }
 
     _set({
-      'low' :l,
-      'high':h,
-      'min' :M.floor(l/10)*10,
-      'max' :M.ceil(h/10)*10,
-      'tempArray':temps
+      'low' : l,
+      'high': h,
+      'min' : M.floor(l/10)*10,
+      'max' : M.ceil(h/10)*10,
+      'ts'  : temps
     });
 
     _drawCanvas();
-    _drawTempAxis();
+    _drawAxes(ts);
     _drawTemps();
   };
 
   var _drawCanvas = function() {
     // draw container
-    _set('container', $('<div class="tempContainer"/>'));
-    $('body').append( _get('container') );
+    var cv = $('<canvas/>'),
+        w  = $('<div class="wrapper"><div class="content"><h1>Cupertino, CA</h1></div></div>').appendTo($('body')).append(cv),
+        t  = new Temps({canvas:cv, width:_get('width'), margin:_get('margin')});
+    _set({
+      'wrap'  :w,
+      'canvas':cv,
+      'temps' :t
+    });
 
-    // draw canvas
-    var cv = $('<canvas>Canvas support is required to view this app</canvas>');
-    _set('canvas', cv);
-    _get('container').append( _get('canvas') );
-
-    // create Temps instance
-    var t = new Temps({canvas:cv, width:35});
-    _set('temps', t);
+    cv.wrap('<div class="cWrapper"/>');
 
     // scale the canvas
     var l = _get('min'),
         h = _get('max'),
-        c = _get('tempArray').length,
+        c = _get('ts').length,
         wi = t.getWidth(l,h) + t.A.width*c + t.A.margin*(c-1),
         hi = t.getHeight(l,h);
 
@@ -310,29 +310,42 @@ var Chart = function( temps ) {
     });
   };
 
-  var _drawTempAxis = function() {
-    var ta = $('<ul class="temps"/>').appendTo(_get('container')),
-    canvas = _get('canvas');
-    _set('tempAxis',ta);
+  var _drawAxes = function(ts) {
+    var x   = $('<ul class="x"/>'),
+     y      = $('<ul class="y"/>'),
+     w      = _get('width'),
+     t, b, l;
 
-    var min = M.ceil(_get('min')/10)*10,
-        max = M.floor(_get('max')/10*10);
+     canvas = _get('canvas');
+     canvas.after(x).after(y);
+
+    _set({x:x,y:y});
+
+    // X Axis
+    l = ts.length;
+    for(var i=0;i<l;i++) {
+      t = $('<li>'+ts[i].label+'</li>').appendTo(x);
+      t.css({ right:w-(35*i)-10 });
+    }
+
+    // Y Axis
+
+    var min = _get('min'),
+        max = _get('max');
 
     for(var i=min;i<=max;i=i+10) {
-      var t = $('<li>'+i+'&deg;</li>').appendTo(ta),
-          b = _get('temps').degreeToPixel((i)-_get('min'));
+      t = $('<li>'+i+'&deg;</li>').appendTo(y);
+      b = _get('temps').degreeToPixel((i)-min);
       t.css({
-        position: 'absolute',
-        bottom:    b + 'px',
-        textAlign:'right',
-        right: (_get('width') - (b/M.sqrt(0.75)*0.5)) + 'px'
+        bottom: b + 'px',
+        right:  (w - (b/sq75*0.5)) + 'px'
       })
     }
   };
 
   var _drawTemps = function(){
     var  t = _get('temps'),
-        ts = _get('tempArray'),
+        ts = _get('ts'),
         ma = _get('max'),
         mi = _get('min');
     for(var i=0;i<ts.length;i++) {
