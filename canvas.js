@@ -1,33 +1,35 @@
-var Color = function( opts ) {
-  var self = this;
+var M = Math;
 
-  this.ATTRS = {
+var Color = function( opts ) {
+  var _s = this;
+
+  this.A = {
     hex     : null,
     triplet : null
   };
 
-  var initialize = function( opts ) {
+  var init = function( opts ) {
     if(opts.hex) {
-      self.ATTRS.hex = opts.hex;
+      _s.A.hex = opts.hex;
 
-      self.ATTRS.triplet = self.toTriplet();
+      _s.A.triplet = _s.toTriplet();
     }
 
     if(opts.triplet) {
-      self.ATTRS.triplet = opts.triplet;
-      self.ATTRS.hex = self.toString();
+      _s.A.triplet = opts.triplet;
+      _s.A.hex = _s.toString();
     }
   };
 
   /*== Generation methods ==*/
 
   this.gradient = function( finalColor, steps ) {
-    var from3 = self.ATTRS.triplet,
-          to3 = finalColor.ATTRS.triplet;
+    var from3 = _s.A.triplet,
+          to3 = finalColor.A.triplet;
 
     var diff = [ (to3[0]-from3[0])/steps, (to3[1]-from3[1])/steps, (to3[2]-from3[2])/steps ];
 
-    var out = [self];
+    var out = [_s];
 
     for(var i=0;i<steps;i++) {
       out.push( new Color({triplet:[ from3[0]+(diff[0]*i), from3[1]+(diff[1]*i), from3[2]+(diff[2]*i) ]}) );
@@ -43,26 +45,26 @@ var Color = function( opts ) {
   // the triplet of decimal values for the color
   this.toTriplet = function() {
     return [
-      parseInt( self.ATTRS.hex.substr(0,2), 16 ),
-      parseInt( self.ATTRS.hex.substr(2,2), 16 ),
-      parseInt( self.ATTRS.hex.substr(4,2), 16 )
+      parseInt( _s.A.hex.substr(0,2), 16 ),
+      parseInt( _s.A.hex.substr(2,2), 16 ),
+      parseInt( _s.A.hex.substr(4,2), 16 )
     ];
   };
 
   // the hex string for the color
   this.toString = function() {
-    var t = self.ATTRS.triplet, tt;
-    function _h(i) { tt = Math.floor(t[i]).toString(16); return (('0'+tt).substr(tt.length-1,2)); }
+    var t = _s.A.triplet, tt;
+    function _h(i) { tt = M.floor(t[i]).toString(16); return (('0'+tt).substr(tt.length-1,2)); }
     return _h(0) + _h(1) + _h(2);
   };
 
-  (function(){initialize(opts);}());
+  (function(){init(opts);}());
 };
 
 var Temps = function( config ) {
-  var self = this;
+  var _s = this;
 
-  this.ATTRS = {
+  this.A = {
     width : 30,
     x     : null,
     y     : null,
@@ -94,13 +96,13 @@ var Temps = function( config ) {
   // opts: {high, low, max, min}
   this.drawTemp = function(opts) {
     var step = _get('step'),
-         min = self.snapToGrid( opts.min, 'min' ),
-         max = self.snapToGrid( opts.max, 'max' );
+         min = _s.snapToGrid( opts.min, 'min' ),
+         max = _s.snapToGrid( opts.max, 'max' );
     // determine the number of triangles to draw
     var tCount = _countTriangles(min,max);
 
     // calculate the offset
-    var xOffset = self.getWidth( min, max, opts.offset );
+    var xOffset = _s.getWidth( min, max, opts.offset );
 
     // draw the triangles, making sure to choose the right color
     var orientation = true,
@@ -118,7 +120,7 @@ var Temps = function( config ) {
   };
 
   var _getColorForTemp = function( temp ) {
-    return GRADIENT[ Math.floor((temp - _get('minTemp')) / _get('step')) ];
+    return GRADIENT[ M.floor((temp - _get('minTemp')) / _get('step')) ];
   };
 
   /*== Triangle Drawing Methods ==*/
@@ -136,7 +138,7 @@ var Temps = function( config ) {
   };
 
   var _drawUp = function( point, color ){
-    color = color || '#202020';
+    color = color || '#2A2A2A';
     var points = [point];
     points.push( { x: point.x-(_get('x')/2), y: point.y-_get('y') } );
     points.push( { x: point.x-_get('x'),      y: point.y } );
@@ -172,39 +174,39 @@ var Temps = function( config ) {
   /*== External Methods ==*/
 
   this.getHeight = function( min, max ) {
-    return self.getWidth(min,max) * 2 * Math.sqrt(0.75);
+    return _s.getWidth(min,max) * 2 * M.sqrt(0.75);
   };
 
   this.getWidth = function( min, max, offset ) {
-    var xOffset = Math.floor(_countTriangles(min,max)/2) * (_get('width') / 2);
+    var xOffset = M.floor(_countTriangles(min,max)/2) * (_get('width') / 2);
     if(offset) { xOffset = xOffset + offset * ( _get('width') + _get('margin') ); }
     return xOffset;
   };
 
   // should pass in only snapToGrid values for min and max
   var _countTriangles = function( min, max ) {
-    return Math.ceil( (max-min)/_get('step') );
+    return M.ceil( (max-min)/_get('step') );
   };
 
   // takes a temperature and normalizes it to a point on the triangle grid
   this.snapToGrid = function( val, minORmax ) {
     var s = _get('step');
     return minORmax == 'min' ?
-      Math.floor(val / s) * s :
-      Math.ceil(val / s)  * s;
+      M.floor(val / s) * s :
+      M.ceil(val / s)  * s;
   };
 
   this.degreeToPixel = function( degs ) {
-    return degs * ((_get('width')*Math.sqrt(0.75)/2) * _get('per10') / 10);
+    return degs * ((_get('width')*M.sqrt(0.75)/2) * _get('per10') / 10);
   }
 
   /*== Initialize ==*/
 
-  var initialize = function( config ) {
+  var init = function( config ) {
     _set('width', config.width, true);
 
     _set('x', _get('width') * 1);
-    _set('y', _get('width') * Math.sqrt(0.75));
+    _set('y', _get('width') * M.sqrt(0.75));
 
     _set('canvas', $( config.canvas )[0]);
 
@@ -231,22 +233,22 @@ var Temps = function( config ) {
 
   var _set = function( key, val, cautious ) {
     if(cautious && !val) { return; }
-    self.ATTRS[key] = val;
+    _s.A[key] = val;
   };
 
   var _get = function( key ) {
-    return self.ATTRS[key];
+    return _s.A[key];
   };
 
-  (function(){initialize(config);}());
+  (function(){init(config);}());
 };
 
 var Chart = function( temps ) {
-  var self = this;
+  var _s = this;
 
-  this.ATTRS = {
-    max : null,
-    min : null,
+  this.A = {
+    low : null,
+    high : null,
 
     temps : null,
 
@@ -255,21 +257,26 @@ var Chart = function( temps ) {
     canvas : null
   }
 
-  var initialize = function( temps ) {
+  // ts : array of temps, represented by a {high,low} object
+  var init = function( ts ) {
     // set the max and min values
-    _set('max', temps[0].high);
-    _set('min', temps[0].low);
-    for(var i=0;i<temps.length;i++) {
-      _set('max', Math.max( temps[i].high, _get('max') ) );
-      _set('min', Math.min( temps[i].low,  _get('min') ) );
+    var l = ts[0].low,
+        h = ts[0].high;
+    for(var i=0;i<ts.length;i++) {
+      l = M.min( ts[i].low, l );
+      h = M.max( ts[i].high,h );
     }
 
-    _set('tempArray', temps);
+    _set({
+      'low' :l,
+      'high':h,
+      'min' :M.floor(l/10)*10,
+      'max' :M.ceil(h/10)*10,
+      'tempArray':temps
+    });
 
     _drawCanvas();
-
     _drawTempAxis();
-
     _drawTemps();
   };
 
@@ -288,17 +295,19 @@ var Chart = function( temps ) {
     _set('temps', t);
 
     // scale the canvas
-    var l = _set('min', t.snapToGrid( _get('min'), 'min')),
-        h = _set('max', t.snapToGrid( _get('max'), 'max')),
+    var l = _get('min'),
+        h = _get('max'),
         c = _get('tempArray').length,
-        wi = t.getWidth(l,h) + t.ATTRS.width*c + t.ATTRS.margin*(c-1),
+        wi = t.getWidth(l,h) + t.A.width*c + t.A.margin*(c-1),
         hi = t.getHeight(l,h);
 
     cv[0].width = wi;
     cv[0].height = hi;
 
-    _set('width',wi);
-    _set('height',hi);
+    _set({
+      'width':wi,
+      'height':hi
+    });
   };
 
   var _drawTempAxis = function() {
@@ -306,8 +315,8 @@ var Chart = function( temps ) {
     canvas = _get('canvas');
     _set('tempAxis',ta);
 
-    var min = Math.ceil(_get('min')/10)*10,
-        max = Math.floor(_get('max')/10*10);
+    var min = M.ceil(_get('min')/10)*10,
+        max = M.floor(_get('max')/10*10);
 
     for(var i=min;i<=max;i=i+10) {
       var t = $('<li>'+i+'&deg;</li>').appendTo(ta),
@@ -316,7 +325,7 @@ var Chart = function( temps ) {
         position: 'absolute',
         bottom:    b + 'px',
         textAlign:'right',
-        right: (_get('width') - (b/Math.sqrt(0.75)*0.5)) + 'px'
+        right: (_get('width') - (b/M.sqrt(0.75)*0.5)) + 'px'
       })
     }
   };
@@ -334,13 +343,17 @@ var Chart = function( temps ) {
   /*== Helper Methods ==*/
   var _set = function( key, val, cautious ) {
     if(cautious && !val) { return; }
-    self.ATTRS[key] = val;
-    return val;
+    if(typeof key == 'object') {
+      for(var k in key) {_s.A[k] = key[k];}
+    } else {
+      _s.A[key] = val;
+      return val;
+    }
   };
 
   var _get = function( key ) {
-    return self.ATTRS[key];
+    return _s.A[key];
   };
 
-  (function(){initialize(temps);}())
+  (function(){init(temps);}())
 };
