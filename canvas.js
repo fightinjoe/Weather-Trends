@@ -89,8 +89,6 @@ var Temps = function( config ) {
 
   var GRADIENT = null;
 
-  this._g = function() {return GRADIENT;};
-
   /*== Temperature Drawing Methods ==*/
 
   // opts: {high, low, max, min}

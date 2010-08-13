@@ -5,11 +5,7 @@ ul, li {
 }
 
 ul {
-  -moz-transform: rotate(30deg);
-  -webkit-transform: rotate(30deg);
-  -moz-transform-origin: bottom left;
-  -webkit-transform: bottom left;
-  margin-left:300px;
+  float:left;
 }
 
 li {
@@ -28,23 +24,26 @@ li {
 }
 
 li {
-  float:left;
-  clear:left;
   text-indent:-9999px;
   overflow:hidden;
-  margin-top: -15px;
+  margin-left:-.5em;
+  float:right;
 }
 
-li.odd {
-  border-left-width: 1em;
-  border-left-style: solid;
-  border-left-color: #000;
-  left: 0.25em;
+li.up {
+  border-bottom-width: 1em;
+  border-bottom-style: solid;
+  border-bottom-color: Red;
+  border-top-width:0;
+  bottom: 0.25em;
 }
 
-li.even {
-  border-right-width: 1em;
-  border-right-style: solid;
-  border-right-color: #202020;
-  right: 0.25em;
+li.down {
+  border-top-width: 1em;
+  border-top-style: solid;
+  border-top-color: Blue;
+  border-bottom-width:0;
+  margin-top:-.5em;
+  top: 0.25em;
+  clear:right;
 }

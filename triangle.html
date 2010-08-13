@@ -2,40 +2,45 @@
   <head>
     <title>Triangle demo</title>
     <link rel="stylesheet" href="triangle.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" charset="utf-8" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="triangle.js"></script>
   </head>
   <body>
-    <ul>
-      <li class="odd">100</li>
-      <li class="even">98.3</li>
-      <li class="odd">96.6</li>
-      <li class="even">95.0</li>
-      <li class="odd">93.3</li>
-      <li class="even">91.6</li>
-      <li class="odd">90</li>
-      <li class="even">88.3</li>
-      <li class="odd">86.6</li>
-      <li class="even">85.0</li>
-      <li class="odd">83.3</li>
-      <li class="even">81.6</li>
-      <li class="odd">80</li>
-      <li class="even">78.3</li>
-      <li class="odd">76.6</li>
-      <li class="even">75.0</li>
-      <li class="odd">73.3</li>
-      <li class="even">71.6</li>
-      <li class="odd">70</li>
-      <li class="even">68.3</li>
-      <li class="odd">66.6</li>
-      <li class="even">65.0</li>
-      <li class="odd">63.3</li>
-      <li class="even">61.6</li>
-      <li class="odd">60</li>
-      <li class="even">58.3</li>
-      <li class="odd">56.6</li>
-      <li class="even">55.0</li>
-      <li class="odd">53.3</li>
-      <li class="even">51.6</li>
-      <li class="odd">50</li>
+    <ul style="display:none;">
+      <li class="up">100</li>
+      <li class="down">98.3</li>
+      <li class="up">96.6</li>
+      <li class="down">95.0</li>
+      <li class="up">93.3</li>
+      <li class="down">91.6</li>
+      <li class="up">90</li>
+      <li class="down">88.3</li>
+      <li class="up">86.6</li>
+      <li class="down">85.0</li>
+      <li class="up">83.3</li>
+      <li class="down">81.6</li>
+      <li class="up">80</li>
+      <li class="down">78.3</li>
+      <li class="up">76.6</li>
+      <li class="down">75.0</li>
+      <li class="up">73.3</li>
+      <li class="down">71.6</li>
+      <li class="up">70</li>
+      <li class="down">68.3</li>
+      <li class="up">66.6</li>
+      <li class="down">65.0</li>
+      <li class="up">63.3</li>
+      <li class="down">61.6</li>
+      <li class="up">60</li>
+      <li class="down">58.3</li>
+      <li class="up">56.6</li>
+      <li class="down">55.0</li>
+      <li class="up">53.3</li>
+      <li class="down">51.6</li>
+      <li class="up">50</li>
     </ul>
   </body>
+  <script type="text/javascript" charset="utf-8">
+    var t = new Temp({low:52,high:76});
+  </script>
 </html>
