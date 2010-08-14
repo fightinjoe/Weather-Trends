@@ -77,7 +77,9 @@ var Temps = function( config ) {
 
     minTemp : -10,
 
-    margin : 10
+    margin : 10,
+
+    m : -1  // slope of the graph
   };
 
   var COLORS = [
@@ -101,10 +103,13 @@ var Temps = function( config ) {
          max = _s.snap( opts.max, 'max' );
 
     // determine the number of triangles to draw
-    var tCount = _countTriangles(min,max);
+    var tCount = _countTriangles(min,max),
+        m      = _get('m');
 
     // calculate the offset
-    var xOffset = _s.getWidth( min, max, opts.offset );
+    var xOffset = m==1 ?
+      _s.getWidth( min, max, opts.offset ) :
+      (_get('width') +_get('margin')) * (opts.offset+.5);
 
     // draw the triangles, making sure to choose the right color
     var orientation = true,
@@ -114,7 +119,7 @@ var Temps = function( config ) {
 
     for(var i=0;i<tCount;i++) {
       color = (temp <= _s.snap(opts.high,'max') && temp >= opts.low ) ? '#' + _getColorForTemp( temp ) : null;
-      pts   = orientation ? _drawDown( pts[2], color ) : _drawUp( pts[2], color );
+      pts   = orientation ? _drawDown( pts[2], color, m ) : _drawUp( pts[2], color, m );
 
       orientation = !orientation;
       temp = temp - step;
@@ -127,11 +132,12 @@ var Temps = function( config ) {
 
   /*== Triangle Drawing Methods ==*/
 
-  var _drawDown = function( point, color ){
+  var _drawDown = function( point, color, m ){
     color = color || '#000000';
+    m = m || 1;
     var points = [point];
-    points.push( { x: point.x+_get('x'),     y: point.y } );
-    points.push( { x: point.x+(_get('x')/2), y: point.y+_get('y') } );
+    points.push( { x: point.x+m*_get('x'),     y: point.y } );
+    points.push( { x: point.x+m*(_get('x')/2), y: point.y+_get('y') } );
     points.push( point );
 
     _drawPoly( points, {fillStyle: color} );
@@ -139,11 +145,12 @@ var Temps = function( config ) {
     return points;
   };
 
-  var _drawUp = function( point, color ){
+  var _drawUp = function( point, color, m ){
     color = color || '#2A2A2A';
+    m = m || 1;
     var points = [point];
-    points.push( { x: point.x-(_get('x')/2), y: point.y-_get('y') } );
-    points.push( { x: point.x-_get('x'),      y: point.y } );
+    points.push( { x: point.x-m*(_get('x')/2), y: point.y-_get('y') } );
+    points.push( { x: point.x-m*_get('x'),     y: point.y } );
     points.push( point );
 
     _drawPoly( points, {fillStyle: color} );
@@ -214,6 +221,8 @@ var Temps = function( config ) {
 
     _set('per10', config.per10, true);
     _set('step',  10/_get('per10'));
+
+    _set('slope', config.slope, true);
 
     GRADIENT = _createColorArray();
   };
@@ -286,7 +295,7 @@ var Chart = function( temps ) {
     // draw container
     var cv = $('<canvas/>'),
         w  = $('<div class="wrapper"><div class="content"><h1>'+location+'</h1></div></div>').appendTo($('body')).append(cv),
-        t  = new Temps({canvas:cv, width:35});
+        t  = new Temps({canvas:cv, width:35, m:-1});
     _set({
       'wrap'  :w,
       'canvas':cv,
