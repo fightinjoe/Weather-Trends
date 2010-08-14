@@ -65,8 +65,8 @@ var Temps = function( config ) {
 
   this.A = {
     width : 30,
-    x     : null,
-    y     : null,
+    x     : null, // The width of a single triangle
+    y     : null, // the height of a single triange
 
     canvas : null,
 
@@ -123,6 +123,12 @@ var Temps = function( config ) {
       orientation = !orientation;
       temp = temp - step;
     }
+    if(opts.mark) {
+      _markChart({
+        x:(self.degreeToPixel(opts.mark-min)/sq75)/2,
+        y:self.degreeToPixel(max - opts.mark)
+      }, opts.markDown);
+    }
   };
 
   var _getCForTemp = function( temp ) {
@@ -131,28 +137,32 @@ var Temps = function( config ) {
 
   /*== Triangle Drawing Methods ==*/
 
-  var _drawDown = function( point, color, m ){
+  // Drawing begins at top-left point
+  var _drawDown = function( point, color, m, x ){
     color = color || '#000000';
+    x = x || _get('x');
     m = m || 1;
     var points = [point];
-    points.push( { x: point.x+m*_get('x'),     y: point.y } );
-    points.push( { x: point.x+m*(_get('x')/2), y: point.y+_get('y') } );
+    points.push( { x: point.x+m*x,     y: point.y } );
+    points.push( { x: point.x+m*(x/2), y: point.y+_get('y') } );
     points.push( point );
 
-    _drawPoly( points, {fillStyle: color} );
+    _drawPoly( points, (typeof color == 'object' ? color : {fillStyle: color}) );
 
     return points;
   };
 
-  var _drawUp = function( point, color, m ){
+  // Drawing begins at bottom-right point
+  var _drawUp = function( point, color, m, x ){
     color = color || '#2A2A2A';
+    x = x || _get('x');
     m = m || 1;
     var points = [point];
-    points.push( { x: point.x-m*(_get('x')/2), y: point.y-_get('y') } );
-    points.push( { x: point.x-m*_get('x'),     y: point.y } );
+    points.push( { x: point.x-m*(x/2), y: point.y-x*sq75 } );
+    points.push( { x: point.x-m*x,     y: point.y } );
     points.push( point );
 
-    _drawPoly( points, {fillStyle: color} );
+    _drawPoly( points, (typeof color == 'object' ? color : {fillStyle: color}) );
 
     return points;
   };
@@ -177,6 +187,15 @@ var Temps = function( config ) {
     context.fill();
     if(opts.strokeStyle) {context.stroke();}
     context.closePath();
+  };
+
+  var _markChart = function( point, down ) {
+    var f = down ? _drawDown : _drawUp;
+    var w = 20;
+    f({
+      x: point.x  + w/3 + _get('x')/2,
+      y: (point.y + w*sq75/2)
+    },{strokeStyle:'#FFF',lineWidth:3,fillStyle:'transparent'},null,20);
   };
 
   /*== External Methods ==*/
@@ -204,8 +223,11 @@ var Temps = function( config ) {
       M.ceil(val / s)  * s;
   };
 
+  // degress are measured from the bottom of the graph
   this.degreeToPixel = function( degs ) {
-    return degs * ((_get('width')*sq75/2) * _get('per10') / 10);
+    // degrees * height of triangle * ratio of pixels to degree
+    // (divide by 2, as 2 traingles take the same height)
+    return degs * (_get('y')/2 * _get('per10') / 10);
   }
 
   /*== Initialize ==*/
@@ -366,7 +388,7 @@ var Chart = function( temps, location, opts ) {
         ma = _get('max'),
         mi = _get('min');
     for(var i=0;i<ts.length;i++) {
-      t.drawTemp({max:ma,min:mi,high:ts[i].high,low:ts[i].low, offset:i}); // NYC
+      t.drawTemp({max:ma,min:mi,high:ts[i].high,low:ts[i].low, offset:i, mark:ts[i].mark}); // NYC
     }
   };
 
