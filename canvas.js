@@ -99,7 +99,10 @@ var Temps = function( config ) {
   this.drawTemp = function(opts) {
     var step = _get('step'),
          min = self.snap( opts.min, 'min' ),
-         max = self.snap( opts.max, 'max' );
+         max = self.snap( opts.max, 'max' )
+         off = (_get('width') +_get('margin')) * (opts.offset+.5);
+
+    console.log([_get('width'),_get('margin'),opts.offset]);
 
     // determine the number of triangles to draw
     var tCount = _countTriangles(min,max),
@@ -108,7 +111,7 @@ var Temps = function( config ) {
     // calculate the offset
     var xOffset = m==1 ?
       self.getWidth( min, max, opts.offset ) :
-      (_get('width') +_get('margin')) * (opts.offset+.5);
+      off;
 
     // draw the triangles, making sure to choose the right color
     var orientation = true,
@@ -124,10 +127,13 @@ var Temps = function( config ) {
       temp = temp - step;
     }
     if(opts.mark) {
-      _markChart({
-        x:(self.degreeToPixel(opts.mark-min)/sq75)/2,
-        y:self.degreeToPixel(max - opts.mark)
-      }, opts.markDown);
+      for(var m in opts.mark) {
+        m = opts.mark[m];
+        _markChart({
+          x:(self.degreeToPixel(m.temp-min)/sq75)/2 + off - _get('width')/1.5,
+          y:self.degreeToPixel(max - m.temp)
+        }, m);
+      }
     }
   };
 
@@ -144,7 +150,7 @@ var Temps = function( config ) {
     m = m || 1;
     var points = [point];
     points.push( { x: point.x+m*x,     y: point.y } );
-    points.push( { x: point.x+m*(x/2), y: point.y+_get('y') } );
+    points.push( { x: point.x+m*(x/2), y: point.y+x*sq75 } );
     points.push( point );
 
     _drawPoly( points, (typeof color == 'object' ? color : {fillStyle: color}) );
@@ -171,6 +177,7 @@ var Temps = function( config ) {
     var context = _get('canvas').getContext('2d'),
           point = points[0];
 
+    opts.shadowColor = opts.shadowColor || 'transparent';
     for(var key in opts) { context[key] = opts[key]; }
 
     //context.fillStyle   = opts.fillStyle;
@@ -189,13 +196,30 @@ var Temps = function( config ) {
     context.closePath();
   };
 
-  var _markChart = function( point, down ) {
-    var f = down ? _drawDown : _drawUp;
-    var w = 20;
-    f({
-      x: point.x  + w/3 + _get('x')/2,
-      y: (point.y + w*sq75/2)
-    },{strokeStyle:'#FFF',lineWidth:3,fillStyle:'transparent'},null,20);
+  // Used to mark highs and lows on the chart
+  var _markChart = function( point, opts ) {
+    var f = opts.m==-1 ? _drawDown : _drawUp;
+    var w = 20,
+        q = {},
+        p = {
+          x: point.x  + (opts.m*w/3) + _get('x')/2,
+          y: (point.y + opts.m*w*sq75/2)
+        },
+        o = {
+          strokeStyle : opts.c,
+          lineWidth   : opts.stroke,
+          fillStyle   : 'transparent',
+          shadowColor : '#555',
+          shadowOffsetX: 1,
+          shadowOffsetY: 1,
+          shadowBlur : 2
+        };
+
+    q.y = p.y - opts.m*8;
+    q.x = p.x + (opts.m==1? -15 : 5);
+    _drawPoly([ q, {x:0,y:q.y}],o);
+
+    f(p,o,null,20);
   };
 
   /*== External Methods ==*/
@@ -383,12 +407,21 @@ var Chart = function( temps, location, opts ) {
   };
 
   var _drawTemps = function(){
-    var  t = _get('temps'),
+    var tt = _get('temps'),
         ts = _get('ts'),
         ma = _get('max'),
-        mi = _get('min');
+        mi = _get('min'),
+        h  = _get('high'),
+        l  = _get('low'),
+        hB = false,
+        lB = false;
     for(var i=0;i<ts.length;i++) {
-      t.drawTemp({max:ma,min:mi,high:ts[i].high,low:ts[i].low, offset:i, mark:ts[i].mark}); // NYC
+      var t = ts[i];
+      var mark = [];
+      if(t.mark) { mark.push({temp:t.mark,m:1,stroke:3,c:'#FFF'}); }
+      if(!hB && h==t.high) { mark.push({temp:t.high,m:1,stroke:2,c:'#AAA'}); hB=true; }
+      if(!lB && l==t.low ) { mark.push({temp:t.low,m:-1,stroke:2,c:'#AAA'}); lB=true; }
+      tt.drawTemp({max:ma,min:mi,high:t.high,low:t.low, offset:i, mark:mark}); // NYC
     }
   };
 
