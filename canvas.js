@@ -260,7 +260,7 @@ var Chart = function( temps ) {
   }
 
   // ts : array of temps, represented by a {high,low} object
-  var init = function( ts ) {
+  var init = function( ts, location ) {
     // set the max and min values
     var l = ts[0].low,
         h = ts[0].high;
@@ -277,15 +277,15 @@ var Chart = function( temps ) {
       'ts'  : temps
     });
 
-    _drawCanvas();
+    _drawCanvas(location);
     _drawAxes(ts);
     _drawTemps();
   };
 
-  var _drawCanvas = function() {
+  var _drawCanvas = function(location) {
     // draw container
     var cv = $('<canvas/>'),
-        w  = $('<div class="wrapper"><div class="content"><h1>Cupertino, CA</h1></div></div>').appendTo($('body')).append(cv),
+        w  = $('<div class="wrapper"><div class="content"><h1>'+location+'</h1></div></div>').appendTo($('body')).append(cv),
         t  = new Temps({canvas:cv, width:35});
     _set({
       'wrap'  :w,
@@ -371,3 +371,49 @@ var Chart = function( temps ) {
 
   (function(){init(temps);}())
 };
+
+var YQL = {
+  url : "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20xml%20where%20url%3D%22http%3A%2F%2Fapi.wunderground.com%2Fauto%2Fwui%2Fgeo%2FForecastXML%2Findex.xml%3Fquery%3D__L__%22&format=json",
+
+  weather : function(location, forecast ) {
+    var url = YQL.url.replace('__L__', escape(encodeURIComponent(location)));
+    YQL._query( url, forecast ? 'YQL.weatherCBf' : 'YQL.weatherCBc');
+  },
+
+  weatherCBf : function( data ) {
+    // parse the data set to create an array of temps for the upcoming week
+
+    var fs   = data.query.results.forecast,
+        f;
+
+    var text = fs.txt_forecast.forecastday[0].fcttext;
+
+    fs = fs.simpleforecast.forecastday;
+
+    var temps = []
+    for(var i in fs) {
+      f = fs[i];
+      temps.push({
+        label: f.date.weekday,
+        high : f.high.fahrenheit,
+        low  : f.low.fahrenheit
+      });
+    }
+
+    // update the name of the city on the page
+    $('.wrapper').remove();
+
+    // reprint the canvas
+    new Chart(temps, text);
+  },
+
+  _query : function(url,cb) {
+    console.log(cb);
+    $.ajax({
+      url:url,
+      dataType:'jsonp',
+      jsonp:'callback',
+      jsonpCallback:cb
+    })
+  }
+}
