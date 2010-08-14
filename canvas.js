@@ -379,8 +379,7 @@ var Chart = function( temps, location, opts ) {
      w      = _get('width'),
      t, b, l;
 
-     canvas = _get('canvas');
-     canvas.after(x).after(y);
+    _get('canvas').after(x).after(y);
 
     _set({x:x,y:y});
 
@@ -406,6 +405,15 @@ var Chart = function( temps, location, opts ) {
     }
   };
 
+  var _drawLabels = function( ls ) {
+    var ul = $('<ul class="labels"/>').appendTo($('.cWrapper'));
+    each(ls,function(l){
+      console.log(l);
+      var li = $('<li>').appendTo(ul).append(l.l);
+      li.css( 'bottom',  _get('temps').degreeToPixel((l.t)-_get('min')) + 'px' );
+    });
+  };
+
   var _drawTemps = function(){
     var tt = _get('temps'),
         ts = _get('ts'),
@@ -423,6 +431,11 @@ var Chart = function( temps, location, opts ) {
       if(!lB && l==t.low ) { mark.push({temp:t.low,m:-1,stroke:2,c:'#AAA'}); lB=true; }
       tt.drawTemp({max:ma,min:mi,high:t.high,low:t.low, offset:i, mark:mark}); // NYC
     }
+    _drawLabels([
+      {l:$('<em>Current Temp: <span>'+ts[0].mark+'&deg;</span></em>'),t:ts[0].mark},
+      {l:$('<span>Weekly High: '+h+'&deg;</span>'),t:h},
+      {l:$('<span>Weekly Low: '+l +'&deg;</span>'),t:l}
+    ])
   };
 
   /*== Helper Methods ==*/
@@ -465,7 +478,7 @@ var YQL = {
   forecastCB : function( data ) {
     // parse the data set to create an array of temps for the upcoming week
 
-    var fs   = data.query.results.forecast,
+    var fs = data.query.results.forecast,
         f;
 
     var text = fs.txt_forecast.forecastday[0].fcttext;
@@ -524,4 +537,8 @@ String.prototype.titleCase = function() {
   var s = this.split(' ');
   for(var i in s) { s[i] = s[i].substr(0,1).toUpperCase() + s[i].substr(1,-1); }
   return s.join(' ');
+}
+
+var each = function(as, fn) {
+  for(var i=0;i<as.length;i++) { fn(as[i],i); }
 }

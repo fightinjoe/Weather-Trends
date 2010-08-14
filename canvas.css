@@ -55,3 +55,16 @@ li {
   position:static;
   clear:both;
 }
+
+.labels {
+  width:170px;
+  left:-170px;
+  bottom:-10px;
+  font-weight:normal;
+}
+
+.labels li {
+  width:98%;
+  text-align:right;
+  font-size:13px;
+}
