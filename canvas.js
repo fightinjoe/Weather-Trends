@@ -1,60 +1,58 @@
 var M = Math,
  sq75 = M.sqrt(0.75);
 
-var Color = function( opts ) {
-  var _s = this;
+// Class for handling color
+var C = function( opts ) {
+  var self = this;
 
   this.A = {
-    hex     : null,
-    triplet : null
+    hex : null,
+    tpl : null  // A 3-pair of decimal values for the RGB components
   };
 
   var init = function( opts ) {
     if(opts.hex) {
-      _s.A.hex = opts.hex;
-
-      _s.A.triplet = _s.toTriplet();
+      self.A.hex = opts.hex;
+      self.A.tpl = self.toTriplet();
     }
 
-    if(opts.triplet) {
-      _s.A.triplet = opts.triplet;
-      _s.A.hex = _s.toString();
+    if(opts.tpl) {
+      self.A.tpl = opts.tpl;
+      self.A.hex = self.toString();
     }
   };
 
   /*== Generation methods ==*/
 
-  this.gradient = function( finalColor, steps ) {
-    var from3 = _s.A.triplet,
-          to3 = finalColor.A.triplet;
+  this.gradient = function( finalC, steps ) {
+    var from3 = self.A.tpl,
+          to3 = finalC.A.tpl,
+          _h;
 
-    var diff = [ (to3[0]-from3[0])/steps, (to3[1]-from3[1])/steps, (to3[2]-from3[2])/steps ];
+    _h = function(i) { return (to3[i]-from3[i])/steps; }
+    var diff = [ _h(0), _h(1), _h(2) ];
 
-    var out = [_s];
+    var out = [self];
 
+    _h = function(i,j) { return from3[j]+(diff[j]*i); }
     for(var i=0;i<steps;i++) {
-      out.push( new Color({triplet:[ from3[0]+(diff[0]*i), from3[1]+(diff[1]*i), from3[2]+(diff[2]*i) ]}) );
+      out.push( new C({tpl:[ _h(i,0), _h(i,1), _h(i,2) ]}) );
     }
-
-    // if(includeEnds) out.push(to3);
 
     return out;
   };
 
   /*== Output converstions ==*/
 
-  // the triplet of decimal values for the color
+  // the tpl of decimal values for the color
   this.toTriplet = function() {
-    return [
-      parseInt( _s.A.hex.substr(0,2), 16 ),
-      parseInt( _s.A.hex.substr(2,2), 16 ),
-      parseInt( _s.A.hex.substr(4,2), 16 )
-    ];
+    function _h(i) { return parseInt( self.A.hex.substr(i,2), 16 ); }
+    return [ _h(0), _h(2), _h(4) ];
   };
 
   // the hex string for the color
   this.toString = function() {
-    var t = _s.A.triplet, tt;
+    var t = self.A.tpl, tt;
     function _h(i) { tt = M.floor(t[i]).toString(16); return (('0'+tt).substr(tt.length-1,2)); }
     return _h(0) + _h(1) + _h(2);
   };
@@ -63,7 +61,7 @@ var Color = function( opts ) {
 };
 
 var Temps = function( config ) {
-  var _s = this;
+  var self = this;
 
   this.A = {
     width : 30,
@@ -79,17 +77,18 @@ var Temps = function( config ) {
 
     margin : 10,
 
-    m : -1  // slope of the graph
+    m : 1  // slope of the graph
   };
 
+  function _h(c) {return new C({hex:c}); }
   var COLORS = [
-    new Color({ hex: '000000' }),   // black    -10F
-    new Color({ hex: '9363F6' }),   // purple    10F
-    new Color({ hex: 'FFFFFF' }),   // white - freezing
-    new Color({ hex: '2CE7FC' }),   // blue      50F
-    new Color({ hex: 'FEFB60' }),   // yellow    70F
-    new Color({ hex: 'FF001A' }),   // red       90F
-    new Color({ hex: '8C0009' })    // maroon   110F
+    _h('000'    ),   // black    -10F
+    _h('9363F6' ),   // purple    10F
+    _h('FFF'    ),   // white - freezing
+    _h('2CE7FC' ),   // blue      50F
+    _h('FEFB60' ),   // yellow    70F
+    _h('FF001A' ),   // red       90F
+    _h('8C0009' )    // maroon   110F
   ];
 
   var GRADIENT = null;
@@ -99,8 +98,8 @@ var Temps = function( config ) {
   // opts: {high, low, max, min}
   this.drawTemp = function(opts) {
     var step = _get('step'),
-         min = _s.snap( opts.min, 'min' ),
-         max = _s.snap( opts.max, 'max' );
+         min = self.snap( opts.min, 'min' ),
+         max = self.snap( opts.max, 'max' );
 
     // determine the number of triangles to draw
     var tCount = _countTriangles(min,max),
@@ -108,7 +107,7 @@ var Temps = function( config ) {
 
     // calculate the offset
     var xOffset = m==1 ?
-      _s.getWidth( min, max, opts.offset ) :
+      self.getWidth( min, max, opts.offset ) :
       (_get('width') +_get('margin')) * (opts.offset+.5);
 
     // draw the triangles, making sure to choose the right color
@@ -118,7 +117,7 @@ var Temps = function( config ) {
         color;
 
     for(var i=0;i<tCount;i++) {
-      color = (temp <= _s.snap(opts.high,'max') && temp >= opts.low ) ? '#' + _getColorForTemp( temp ) : null;
+      color = (temp <= self.snap(opts.high,'max') && temp >= opts.low ) ? '#' + _getCForTemp( temp ) : null;
       pts   = orientation ? _drawDown( pts[2], color, m ) : _drawUp( pts[2], color, m );
 
       orientation = !orientation;
@@ -126,7 +125,7 @@ var Temps = function( config ) {
     }
   };
 
-  var _getColorForTemp = function( temp ) {
+  var _getCForTemp = function( temp ) {
     return GRADIENT[ M.floor((temp - _get('minTemp')) / _get('step')) ];
   };
 
@@ -183,7 +182,7 @@ var Temps = function( config ) {
   /*== External Methods ==*/
 
   this.getHeight = function( min, max ) {
-    return _s.getWidth(min,max) * 2 * sq75;
+    return self.getWidth(min,max) * 2 * sq75;
   };
 
   this.getWidth = function( min, max, offset ) {
@@ -222,12 +221,12 @@ var Temps = function( config ) {
     _set('per10', config.per10, true);
     _set('step',  10/_get('per10'));
 
-    _set('slope', config.slope, true);
+    _set('m', config.m, true);
 
-    GRADIENT = _createColorArray();
+    GRADIENT = _createCArray();
   };
 
-  var _createColorArray = function() {
+  var _createCArray = function() {
     var out = [], 
        step = (_get('per10')*2)-1,
        to, from;
@@ -244,18 +243,18 @@ var Temps = function( config ) {
 
   var _set = function( key, val, cautious ) {
     if(cautious && !val) { return; }
-    _s.A[key] = val;
+    self.A[key] = val;
   };
 
   var _get = function( key ) {
-    return _s.A[key];
+    return self.A[key];
   };
 
   (function(){init(config);}());
 };
 
-var Chart = function( temps ) {
-  var _s = this;
+var Chart = function( temps, location, opts ) {
+  var self = this;
 
   this.A = {
     low : null,
@@ -265,11 +264,14 @@ var Chart = function( temps ) {
 
     // html elements
     container: null,
-    canvas : null
+    canvas : null,
+
+    m : 1
   }
 
   // ts : array of temps, represented by a {high,low} object
-  var init = function( ts, location ) {
+  var init = function( ts, location, opts ) {
+    opts = opts || {};
     // set the max and min values
     var l = ts[0].low,
         h = ts[0].high;
@@ -286,6 +288,8 @@ var Chart = function( temps ) {
       'ts'  : temps
     });
 
+    _set('m',opts.m,true);
+
     _drawCanvas(location);
     _drawAxes(ts);
     _drawTemps();
@@ -294,13 +298,16 @@ var Chart = function( temps ) {
   var _drawCanvas = function(location) {
     // draw container
     var cv = $('<canvas/>'),
-        w  = $('<div class="wrapper"><div class="content"><h1>'+location+'</h1></div></div>').appendTo($('body')).append(cv),
-        t  = new Temps({canvas:cv, width:35, m:-1});
+        p  = $('#'+(_get('m')==1?'forecast':'cities')),
+        w  = $('<div class="wrapper "><div class="content"><h1>'+location+'</h1></div></div>').appendTo(p).append(cv),
+        t  = new Temps({canvas:cv, width:35, m:_get('m')});
+
     _set({
       'wrap'  :w,
       'canvas':cv,
       'temps' :t
     });
+    if(_get('m')==-1){w.addClass('neg');}
 
     cv.wrap('<div class="cWrapper"/>');
 
@@ -335,7 +342,9 @@ var Chart = function( temps ) {
     l = ts.length;
     for(var i=0;i<l;i++) {
       t = $('<li>'+ts[i].label+'</li>').appendTo(x);
-      t.css({ right:w-(45*i)-20 });
+      _get('m')==1?
+        t.css({ right:w-(45*i)-20 }):
+        t.css({ left:w-(45*(ts.length-i))+20});
     }
 
     // Y Axis
@@ -346,10 +355,8 @@ var Chart = function( temps ) {
     for(var i=min;i<=max;i=i+10) {
       t = $('<li>'+i+'&deg;</li>').appendTo(y);
       b = _get('temps').degreeToPixel((i)-min);
-      t.css({
-        bottom: b + 'px',
-        left:  ((ts.length*45)+20+(b/sq75*0.5)) + 'px'
-      })
+      t.css( 'bottom', b + 'px' );
+      t.css( _get('m')==1?'left':'right', ((ts.length*45)+20+(b/sq75*0.5)) + 'px' );
     }
   };
 
@@ -367,29 +374,40 @@ var Chart = function( temps ) {
   var _set = function( key, val, cautious ) {
     if(cautious && !val) { return; }
     if(typeof key == 'object') {
-      for(var k in key) {_s.A[k] = key[k];}
+      for(var k in key) {self.A[k] = key[k];}
     } else {
-      _s.A[key] = val;
+      self.A[key] = val;
       return val;
     }
   };
 
   var _get = function( key ) {
-    return _s.A[key];
+    return self.A[key];
   };
 
-  (function(){init(temps);}())
+  (function(){init(temps,location,opts);}())
 };
 
 var YQL = {
-  url : "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20xml%20where%20url%3D%22http%3A%2F%2Fapi.wunderground.com%2Fauto%2Fwui%2Fgeo%2FForecastXML%2Findex.xml%3Fquery%3D__L__%22&format=json",
+  api   : "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=",
+  url   : "http://query.yahooapis.com/v1/public/yql?format=json&q=",
+  query : 'select * from xml where url',
 
-  weather : function(location, forecast ) {
-    var url = YQL.url.replace('__L__', escape(encodeURIComponent(location)));
-    YQL._query( url, forecast ? 'YQL.weatherCBf' : 'YQL.weatherCBc');
+  forecast : function(location ) {
+    var url = YQL.url + escape(YQL.query + '="'+ YQL.api+escape(location) +'"');
+    YQL._query( url, 'YQL.forecastCB');
   },
 
-  weatherCBf : function( data ) {
+  cities : function( locations ) {
+    var urls = [];
+    for(var i in locations) {
+      urls.push( YQL.api+escape(locations[i]) )
+    }
+    var url = YQL.url + escape( YQL.query + ' in ("'+urls.join('","')+'")');
+    YQL._query( url, 'YQL.citiesCB' );
+  },
+
+  forecastCB : function( data ) {
     // parse the data set to create an array of temps for the upcoming week
 
     var fs   = data.query.results.forecast,
@@ -402,11 +420,7 @@ var YQL = {
     var temps = []
     for(var i in fs) {
       f = fs[i];
-      temps.push({
-        label: f.date.weekday,
-        high : f.high.fahrenheit,
-        low  : f.low.fahrenheit
-      });
+      temps.push( YQL._forecastCollector(f));
     }
 
     // update the name of the city on the page
@@ -416,8 +430,32 @@ var YQL = {
     new Chart(temps, text);
   },
 
+  citiesCB : function( data ) {
+    var fs = data.query.results.forecast,
+     temps = [],
+         f;
+
+    for(var i in fs) {
+      f = fs[i].simpleforecast.forecastday[0];
+      temps.push( YQL._forecastCollector(f));
+    }
+
+    // update the name of the city on the page
+    $('.wrapper').remove();
+
+    // reprint the canvas
+    new Chart(temps, 'text',{m:-1});
+  },
+
+  _forecastCollector : function( f ) {
+    return {
+      label: f.date.weekday,
+      high : f.high.fahrenheit,
+      low  : f.low.fahrenheit
+    };
+  },
+
   _query : function(url,cb) {
-    console.log(cb);
     $.ajax({
       url:url,
       dataType:'jsonp',
@@ -425,4 +463,10 @@ var YQL = {
       jsonpCallback:cb
     })
   }
+};
+
+String.prototype.titleCase = function() {
+  var s = this.split(' ');
+  for(var i in s) { s[i] = s[i].substr(0,1).toUpperCase() + s[i].substr(1,-1); }
+  return s.join(' ');
 }
