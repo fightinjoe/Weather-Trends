@@ -77,7 +77,7 @@ var Temps = function( config ) {
 
     minTemp : -10,
 
-    margin : 5
+    margin : 10
   };
 
   var COLORS = [
@@ -97,8 +97,9 @@ var Temps = function( config ) {
   // opts: {high, low, max, min}
   this.drawTemp = function(opts) {
     var step = _get('step'),
-         min = _s.snapToGrid( opts.min, 'min' ),
-         max = _s.snapToGrid( opts.max, 'max' );
+         min = _s.snap( opts.min, 'min' ),
+         max = _s.snap( opts.max, 'max' );
+
     // determine the number of triangles to draw
     var tCount = _countTriangles(min,max);
 
@@ -112,7 +113,7 @@ var Temps = function( config ) {
         color;
 
     for(var i=0;i<tCount;i++) {
-      color = (temp <= opts.high && temp >= opts.low ) ? '#' + _getColorForTemp( temp ) : null;
+      color = (temp <= _s.snap(opts.high,'max') && temp >= opts.low ) ? '#' + _getColorForTemp( temp ) : null;
       pts   = orientation ? _drawDown( pts[2], color ) : _drawUp( pts[2], color );
 
       orientation = !orientation;
@@ -184,13 +185,13 @@ var Temps = function( config ) {
     return xOffset;
   };
 
-  // should pass in only snapToGrid values for min and max
+  // should pass in only snap values for min and max
   var _countTriangles = function( min, max ) {
     return M.ceil( (max-min)/_get('step') );
   };
 
   // takes a temperature and normalizes it to a point on the triangle grid
-  this.snapToGrid = function( val, minORmax ) {
+  this.snap = function( val, minORmax ) {
     var s = _get('step');
     return minORmax == 'min' ?
       M.floor(val / s) * s :
@@ -285,7 +286,7 @@ var Chart = function( temps ) {
     // draw container
     var cv = $('<canvas/>'),
         w  = $('<div class="wrapper"><div class="content"><h1>Cupertino, CA</h1></div></div>').appendTo($('body')).append(cv),
-        t  = new Temps({canvas:cv, width:_get('width'), margin:_get('margin')});
+        t  = new Temps({canvas:cv, width:35});
     _set({
       'wrap'  :w,
       'canvas':cv,
@@ -325,7 +326,7 @@ var Chart = function( temps ) {
     l = ts.length;
     for(var i=0;i<l;i++) {
       t = $('<li>'+ts[i].label+'</li>').appendTo(x);
-      t.css({ right:w-(35*i)-10 });
+      t.css({ right:w-(45*i)-20 });
     }
 
     // Y Axis
@@ -338,7 +339,7 @@ var Chart = function( temps ) {
       b = _get('temps').degreeToPixel((i)-min);
       t.css({
         bottom: b + 'px',
-        right:  (w - (b/sq75*0.5)) + 'px'
+        left:  ((ts.length*45)+20+(b/sq75*0.5)) + 'px'
       })
     }
   };
