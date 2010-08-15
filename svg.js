@@ -181,7 +181,7 @@ var Temp = function(opts) {
     self.A.min = _round(opts.min || opts.low,-1,10);
     self.A.max = _round(opts.max || opts.high,1,10);
 
-    self.A.off = (opts.off || 0)*16;
+    self.A.off  = (opts.off || 0)*16;
 
     self.A.levels = {
       c : (self.A.max - self.A.min)/10*3,
@@ -191,7 +191,7 @@ var Temp = function(opts) {
 
     self.A.cI = (self.A.min+10)*.6; // starting index to ref. colors from
 
-    _drawTemp( opts.label );
+    _drawTemp( opts.label, opts.axis );
   };
 
   /*== Helper Methods ==*/
@@ -203,7 +203,7 @@ var Temp = function(opts) {
     return (dir>0 ? M.ceil(val) : M.floor(val))*base;
   };
 
-  var _drawTemp = function( label ) {
+  var _drawTemp = function( label, drawTemps ) {
     // create a wrapper
     var w   = x('w'),
         g   = x('g'),
@@ -232,8 +232,15 @@ var Temp = function(opts) {
       j = c-i-1+self.A.cI;
       l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
       l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
+
+      if(drawTemps && (i%3==2)) {
+        g = txt.clone();
+        g.text( (self.A.max-(i+1)/3*10) + '°').move(15,8.66);
+        l.append(g);
+      }
     }
 
+    // Add labels to the bottom
     t = txt.clone();
     t.text(label).attr('text-anchor','end').turn(300,0,0).move(-8,10);
     l.append(t);
@@ -257,6 +264,7 @@ var Chart = function(temps) {
       o.off = i;
       o.min = l;
       o.max = h;
+      if(i==temps.length-1) { o.axis=true; }
       new Temp( o );
     }
   };
