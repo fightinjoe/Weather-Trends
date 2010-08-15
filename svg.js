@@ -34,6 +34,26 @@ var xs = {
     return this;
   },
 
+  trans : function(type) {
+    var ap = Array.prototype;
+    t = (this.attr('transform') || '').replace( new RegExp(type+'\([^)]*\)'),'');
+    var val = t + ' ' + type + '(' + ap.join.call(ap.slice.call(arguments,1), ' ') + ')';
+    this.attr('transform', val);
+    return this;
+  },
+
+  move : function(x, y) {
+    return this.trans('translate', x, y);
+  },
+
+  rotate : function(deg, x, y) {
+    return this.trans('rotate', deg, x, y);
+  },
+
+  bg : function(color) {
+    return this.attr('fill','#'+color.toString());
+  },
+
   show : function() {
     this.style.dispay = '';
   },
@@ -144,13 +164,19 @@ var Temp = function(opts) {
   };
 
   var _initialize = function( opts ) {
-    self.A.low  = opts.low;
-    self.A.high = opts.high;
+    self.A.low  = _round(opts.low,-1);
+    self.A.high = _round(opts.high,1);
 
     self.A.min = _round(opts.low,-1,10);
     self.A.max = _round(opts.high,1,10);
 
-    self.A.levels = (self.A.max - self.A.min)/10*3;
+    self.A.levels = {
+      c : (self.A.max - self.A.min)/10*3,
+      h : (self.A.max-self.A.high)/10*6,   // index of the high triangle, counting from the top
+      l : (self.A.max-self.A.low)/10*6+1
+    }
+
+    console.log([self.A.levels.h, self.A.levels.l]);
 
     self.A.cI = (self.A.min+10)*.6; // starting index to ref. colors from
 
@@ -161,7 +187,8 @@ var Temp = function(opts) {
 
   // Rounds a value up or down to the nearest base
   var _round = function(val, dir, base) {
-    val = val/(base || 1.6);
+    base = base || 10/6;
+    val = val/base;
     return (dir>0 ? M.ceil(val) : M.floor(val))*base;
   };
 
@@ -175,9 +202,10 @@ var Temp = function(opts) {
 
     // create a level group
     var l0 = w.clone(),
-        t1 = t.clone(),
-        t2 = t.clone().attr('transform','translate(5 0) rotate(180 5 4.33)'),
-        c  = self.A.levels,
+        t1 = t.clone().move(5,0).rotate(180,5,4.33),
+        t2 = t.clone(),
+        lv = self.A.levels,
+        c  = lv.c,
         l,j;
 
     l0.append(t1).append(t2);
@@ -186,11 +214,12 @@ var Temp = function(opts) {
     for(var i=0;i<c;i++) {
       l = l0.clone();
       temp.append(l);
-      l.attr('transform','translate('+(c-i-1)*5+' '+8.66*i+')');
+      l.move((c-i-1)*5,8.66*i);
       j = c-i-1+self.A.cI;
-      console.log([c,i,j]);
-      l.children[1].attr('fill','#'+_GRADIENTS[j].toString());
-      l.children[2].attr('fill','#'+_GRADIENTS[j+1].toString());
+      console.log([lv.h,i*2,lv.l]);
+      console.log((lv.h >= i*2  && i*2   >= lv.l));
+      l.children[1].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
+      l.children[2].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
     }
   };
 

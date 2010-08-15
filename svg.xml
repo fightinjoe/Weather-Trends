@@ -19,4 +19,7 @@
     <polygon id="t" fill="lime" points="5,0 10,8.66 0,8.66" />
   </svg>
 </body>
+<script type="text/javascript">
+  var t = new Temp({high:73,low:56});
+</script>
 </html>
