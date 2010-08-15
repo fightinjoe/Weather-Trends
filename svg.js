@@ -9,8 +9,10 @@ var xs = {
   },
 
   clone : function() {
-    var out = x(this.cloneNode(false)),
-    cs = this.children;
+    var out = this.cloneNode(false),
+    cs = this.childNodes;
+    out.id = null;
+    out = x(out);
 
     for(var i=0; i<cs.length; i++) {
       out.append( x(cs[i]).clone() );
@@ -46,7 +48,7 @@ var xs = {
     return this.trans('translate', x, y);
   },
 
-  rotate : function(deg, x, y) {
+  turn : function(deg, x, y) {
     return this.trans('rotate', deg, x, y);
   },
 
@@ -54,8 +56,17 @@ var xs = {
     return this.attr('fill','#'+color.toString());
   },
 
+  text : function(txt) {
+//    var cs = this.childNodes;
+//    for(var i=0;i<cs.length;i++) {
+//      this.removeChild(cs[i]);
+//    }
+    this.appendChild(document.createTextNode(txt));
+    return this;
+  },
+
   show : function() {
-    this.style.dispay = '';
+    this.style.display = '';
   },
 
   hide : function() {
@@ -167,20 +178,20 @@ var Temp = function(opts) {
     self.A.low  = _round(opts.low,-1);
     self.A.high = _round(opts.high,1);
 
-    self.A.min = _round(opts.low,-1,10);
-    self.A.max = _round(opts.high,1,10);
+    self.A.min = _round(opts.min || opts.low,-1,10);
+    self.A.max = _round(opts.max || opts.high,1,10);
+
+    self.A.off = (opts.off || 0)*16;
 
     self.A.levels = {
       c : (self.A.max - self.A.min)/10*3,
       h : (self.A.max-self.A.high)/10*6,   // index of the high triangle, counting from the top
-      l : (self.A.max-self.A.low)/10*6+1
+      l : (self.A.max-self.A.low)/10*6-1
     }
-
-    console.log([self.A.levels.h, self.A.levels.l]);
 
     self.A.cI = (self.A.min+10)*.6; // starting index to ref. colors from
 
-    _drawTemp();
+    _drawTemp( opts.label );
   };
 
   /*== Helper Methods ==*/
@@ -192,17 +203,20 @@ var Temp = function(opts) {
     return (dir>0 ? M.ceil(val) : M.floor(val))*base;
   };
 
-  var _drawTemp = function() {
+  var _drawTemp = function( label ) {
     // create a wrapper
-    var w = x('w'),
-        t = x('t');
+    var w   = x('w'),
+        g   = x('g'),
+        t   = x('t'),
+        txt = x('txt');
 
     // create a temperature group
-    var temp = w.clone(); w.append(temp);
+    var temp = g.clone(); w.append(temp);
+    if( self.A.off ) { temp.move(self.A.off,0); }
 
     // create a level group
-    var l0 = w.clone(),
-        t1 = t.clone().move(5,0).rotate(180,5,4.33),
+    var l0 = g.clone(),
+        t1 = t.clone().move(5,0).turn(180,5,4.33),
         t2 = t.clone(),
         lv = self.A.levels,
         c  = lv.c,
@@ -216,15 +230,39 @@ var Temp = function(opts) {
       temp.append(l);
       l.move((c-i-1)*5,8.66*i);
       j = c-i-1+self.A.cI;
-      console.log([lv.h,i*2,lv.l]);
-      console.log((lv.h >= i*2  && i*2   >= lv.l));
-      l.children[1].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
-      l.children[2].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
+      l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
+      l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
     }
+
+    t = txt.clone();
+    t.text(label).attr('text-anchor','end').turn(300,0,0).move(-8,10);
+    l.append(t);
   };
 
   (function(){_initialize(opts)}());
 };
+
+var Chart = function(temps) {
+  var _initialize = function(temps) {
+    var o,i,
+        l = temps[0].low,
+        h = temps[0].high;
+    for(i=0;i<temps.length;i++) {
+      l = M.min(l,temps[i].low);
+      h = M.max(h,temps[i].high);
+    }
+
+    for(i=0;i<temps.length;i++) {
+      o = temps[i];
+      o.off = i;
+      o.min = l;
+      o.max = h;
+      new Temp( o );
+    }
+  };
+
+  (function(){_initialize(temps)}());
+}
 
 var YQL = {
   api   : "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=",

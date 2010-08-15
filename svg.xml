@@ -2,24 +2,36 @@
 <head> 
   <title>XTech SVG Demo</title> 
   <style> 
-    body{background:Black;}
+    svg{background:Black;}
   </style>
   <script type="text/ecmascript" src="svg.js"></script>
 </head> 
-<body id="body"
-   style="position:absolute; z-index:0; border:1px solid black; left:5%; top:5%; width:90%; height:90%;"> 
+<body id="body"> 
   <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
-    viewBox="0 0 100 100"
+    viewBox="0 0 200 200"
     preserveAspectRatio="xMidYMid slice"
     style="width:500px; height:500px; position:absolute; top:0; left:0; z-index:-1;"> 
 
-
+    <text font-family="Helvetica" font-size="5" fill="White" id="txt"></text>
 
     <g id="w"></g>
-    <polygon id="t" fill="lime" points="5,0 10,8.66 0,8.66" />
+    <g id="g"></g>
+    <polygon id="t" points="5,0 10,8.66 0,8.66" />
   </svg>
 </body>
 <script type="text/javascript">
-  var t = new Temp({high:73,low:56});
+  //var t = new Temp({max:81,high:77,low:56, off:0});
+  //var t = new Temp({max:81,high:76,low:55, off:1});
+  //var t = new Temp({max:81,high:78,low:56, off:2});
+  //var t = new Temp({max:81,high:81,low:57, off:3});
+  //var t = new Temp({max:81,high:73,low:56, off:4});
+  var c = new Chart([
+    {label:'Thursday',high:77,low:56, mark:61.6},
+    {label:'Friday',  high:76,low:55},
+    {label:'Saturday',high:78,low:56},
+    {label:'Sunday',  high:81,low:57},
+    {label:'Monday',  high:80,low:57},
+    {label:'Tuesday', high:80,low:57}
+  ]);
 </script>
 </html>
