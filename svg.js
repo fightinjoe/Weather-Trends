@@ -189,7 +189,7 @@ var Temp = function(opts) {
       l : (self.A.max-self.A.low)/10*6-1
     }
 
-    self.A.cI = (self.A.min+10)*.6; // starting index to ref. colors from
+    self.A.cI = (self.A.min)*.6+16; // starting index to ref. colors from
 
     _drawTemp( opts.label, opts.axis );
   };
@@ -229,10 +229,11 @@ var Temp = function(opts) {
       l = l0.clone();
       temp.append(l);
       l.move((c-i-1)*5,8.66*i);
-      j = c-i-1+self.A.cI;
+      j = c-2*i-1+self.A.cI;
       l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
       l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
 
+      // draw the temp axis if force
       if(drawTemps && (i%3==2)) {
         g = txt.clone();
         g.text( (self.A.max-(i+1)/3*10) + '°').move(15,8.66);
