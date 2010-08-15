@@ -224,4 +224,81 @@ var Temp = function(opts) {
   };
 
   (function(){_initialize(opts)}());
-}
+};
+
+var YQL = {
+  api   : "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=",
+  url   : "http://query.yahooapis.com/v1/public/yql?format=json&q=",
+  query : 'select * from xml where url',
+
+  forecast : function(location ) {
+    var url = YQL.url + escape(YQL.query + '="'+ YQL.api+escape(location) +'"');
+    YQL._query( url, 'YQL.forecastCB');
+  },
+
+  cities : function( locations ) {
+    var urls = [];
+    for(var i in locations) {
+      urls.push( YQL.api+escape(locations[i]) )
+    }
+    var url = YQL.url + escape( YQL.query + ' in ("'+urls.join('","')+'")');
+    YQL._query( url, 'YQL.citiesCB' );
+  },
+
+  forecastCB : function( data ) {
+    // parse the data set to create an array of temps for the upcoming week
+
+    var fs = data.query.results.forecast,
+        f;
+
+    var text = fs.txt_forecast.forecastday[0].fcttext;
+
+    fs = fs.simpleforecast.forecastday;
+
+    var temps = []
+    for(var i in fs) {
+      f = fs[i];
+      temps.push( YQL._forecastCollector(f));
+    }
+
+    // update the name of the city on the page
+    $('.wrapper').remove();
+
+    // reprint the canvas
+    new Chart(temps, text);
+  },
+
+  citiesCB : function( data ) {
+    var fs = data.query.results.forecast,
+     temps = [],
+         f;
+
+    for(var i in fs) {
+      f = fs[i].simpleforecast.forecastday[0];
+      temps.push( YQL._forecastCollector(f));
+    }
+
+    // update the name of the city on the page
+    $('.wrapper').remove();
+
+    // reprint the canvas
+    new Chart(temps, 'text',{m:-1});
+  },
+
+  _forecastCollector : function( f ) {
+    return {
+      label: f.date.weekday,
+      high : f.high.fahrenheit,
+      low  : f.low.fahrenheit
+    };
+  },
+
+  _query : function(url,cb) {
+    $.ajax({
+      url:url,
+      dataType:'jsonp',
+      jsonp:'callback',
+      jsonpCallback:cb
+    })
+  }
+};
