@@ -3,10 +3,11 @@ body {
   background:black;
 }
 
-body, ul, li {
+body, ul, li, iframe {
   margin:0;
   padding:0;
   list-style:none;
+  border:none;
 }
 
 #wrap {
@@ -21,11 +22,13 @@ body, ul, li {
   -webkit-transition: all 1s ease-in-out;
 }
 
+/*
 #wrap:hover {
   opacity:0.1;
   -moz-transform:scale(2);
   -webkit-transform:scale(2);
 }
+*/
 
 input {
   border:1px solid White;

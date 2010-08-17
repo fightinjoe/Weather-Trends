@@ -12,6 +12,19 @@
         <li>Los Angeles, CA</li>
       </ul>
     </div>
-    <embed width="1000" height="500" src="svg.xml" type="image/svg+xml" />
+    <!-- <embed width="1000" height="500" src="svg.xml" type="image/svg+xml" /> -->
+    <iframe src="weather.svg" width="1000" height="500"></iframe>
+    <script>
+      var svg, YQL;
+      $(document).ready(function(){
+        svg = $('iframe')[0].getSVGDocument().defaultView;
+        YQL = svg.YQL;
+        svg.$ = jQuery;
+
+        $('li').click(function(){
+          YQL.forecast( this.innerHTML );
+        });
+      });
+    </script>
   </body>
 </html>

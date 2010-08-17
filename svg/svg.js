@@ -94,6 +94,13 @@ var xs = {
     return this;
   },
 
+  empty : function() {
+    var cs = this.childNodes;
+    while(cs.length>0) {
+      this.removeChild(cs[0]);
+    }
+  },
+
   /*== Animations ==*/
 
   animate : function( prop, val, callback ) {
@@ -379,6 +386,7 @@ var YQL = {
 
   forecast : function(location ) {
     var url = YQL.url + escape(YQL.query + '="'+ YQL.api+escape(location) +'"');
+    console.log(url);
     YQL._query( url, 'YQL.forecastCB');
   },
 
@@ -408,7 +416,8 @@ var YQL = {
     }
 
     // update the name of the city on the page
-    $('.wrapper').remove();
+    x('w').parentNode.appendChild(x('r'));
+    x('w').empty();
 
     // reprint the canvas
     new Chart(temps, text);
