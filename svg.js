@@ -35,16 +35,38 @@ var xs = {
   /*== Element Manipulation ==*/
 
   attr : function(key, val) {
+    var isStyle = ['fill-opacity','filter'].indexOf(key) > -1;
+
     if(typeof key == 'object') {
       for(var k in key) {
         this.attr(k,key[k]);
       }
     } else if(arguments.length == 2) {
+      if( isStyle ) { return this.stile(key,val); }
       this.setAttributeNS(null,key,val);
     } else {
-      return this.getAttributeNS(null,key);
+      return isStyle ? this.stile(key) : this.getAttributeNS(null,key);
     }
     return this;
+  },
+
+  stile : function(key, val) {
+    var stile = this.attr('style'),
+       regexp = new RegExp('(^| )\\s*'+key+'\\s*:\\s*([^;]+);( |$)');
+
+    if(typeof key == 'object') {
+      for(var k in key) {
+        this.stile(k,key[k]);
+      }
+    } else if(arguments.length==2) {
+      // remove style
+      stile = stile.replace( regexp, ' ' ) + ' ';
+
+      // add new style
+      this.attr('style',stile + key + ':' + val + ';');
+    } else {
+      return stile.match( regexp )[2];
+    }
   },
 
   trans : function(type) {
@@ -83,6 +105,30 @@ var xs = {
   remove : function() {
     this.dad().removeChild(this);
     return this;
+  },
+
+  /*== Animations ==*/
+
+  animate : function( prop, val, callback ) {
+    callback = callback || function(){};
+    var duration = 1000,
+            orig = parseFloat(this.attr(prop)),
+           range = val - orig,
+            self = this,
+           start;
+
+    var helper = function() {
+      var time = Date.now();
+      if(time > start+duration) { return callback(self); }
+
+      var newVal = range * (time - start)/duration + orig;
+
+      self.attr(prop, newVal);
+      setTimeout(helper,10);
+    };
+
+    start = Date.now();
+    return helper(Date.now());
   },
 
   /*== Properties ==*/
@@ -305,8 +351,8 @@ var Temp = function(opts,label) {
       if(i==d-1 && self.A.label) {
         g = txt.clone();
         g.text(self.A.label);
-        l.append( g.move(-15,10).turn(-60,0,0).attr({
-          'font-size':'15px',
+        l.append( g.move(-10,10).turn(-60,0,0).attr({
+          'font-size':'10px',
           'font-style':'italic'
         }) );
       }
