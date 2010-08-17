@@ -94,19 +94,6 @@ var xs = {
     return this;
   },
 
-  show : function() {
-    this.style.display = '';
-  },
-
-  hide : function() {
-    this.style.display = 'none';
-  },
-
-  remove : function() {
-    this.dad().removeChild(this);
-    return this;
-  },
-
   /*== Animations ==*/
 
   animate : function( prop, val, callback ) {
@@ -131,38 +118,6 @@ var xs = {
     return helper(Date.now());
   },
 
-  /*== Properties ==*/
-
-/*
-  // returns the {x,y} offset position of the current element relative
-  // to the relativeTo element
-  pos : function( relativeTo ) {
-    return relativeTo.pt( this.cbox().left, this.cbox().top );
-  },
-
-  bbox : function() { return this.getBBox(); },
-
-  cbox : function() { return this.getBoundingClientRect(); },
-
-  // converts a Client coordinate to a vector unit offset relative
-  // to the current item
-  pt : function(x,y) {
-    var b = this.bbox(), c = this.cbox();
-    var ratio = { x: c.width/b.width, y: c.height/b.height };
-    console.log([c.width, b.width, c.height, b.height]);
-
-    // Client side difference, converted to vector units, then adjusted for offset
-    return {
-      x: (x-c.left) / ratio.x + b.x,
-      y: (y-c.top)  / ratio.y + b.y
-    };
-  },
-
-  bind : function(event,fn) {
-    this.addEventListener(event,fn,false);
-    return this;
-  }
-*/
 };
 
 var x = function(id) {
@@ -468,55 +423,3 @@ var YQL = {
     })
   }
 };
-
-/*
-
-function strokeRed(e) {
-  console.log(e);
-  var pointer = x('p'),
-         rect = x('r'),
-      wrapper = x('w');
-
-  wrapper.append(pointer).prepend(rect);
-
-  var pt = wrapper.pt(e.clientX, e.clientY),
-      qt = this.pt(e.clientX, e.clientY),
-      xx = pt.x - qt.x - 4 + ((qt.y-r)*5/-r),
-      yy = pt.y - r/2;
-
-  pointer.move( xx, yy );
-
-  rect.move( xx, yy );
-  
-  x(rect.childNodes[1]).attr('width', wrapper.bbox().width - x(this).pos(wrapper).x - 15);
-}
-
-function strokeNone(e) {}
-
-function strokeRed(e) {
-  var pointer = x('p');
-
-  //console.log([e,this]);
-  //x(this).attr({stroke:'Red','stroke-width':1});
-
-  var p = this.dad();
-
-  function _h(e) {return e.move(-1,1); } //.trans('scale',0.8); }
-
-  // place the pointer inside the group
-  p.append(_h(pointer));
-
-  // place the rectangle behind the group
-  p.prepend(_h(x('r')));
-
-  var r = x('r'),
-      rr = x(r.childNodes[1]),
-      w = x('w');
-  console.log([w,w.getWidth(), r, r.pos(w).x]);
-  //rr.attr('width', (w.getWidth() - r.pos(w).x));
-}
-
-function strokeNone(e) {
-  x(this).attr({stroke:'transparent', 'stroke-width':0});
-}
-*/
