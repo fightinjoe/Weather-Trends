@@ -8,15 +8,21 @@
 </head> 
 <body id="body"> 
   <svg xmlns="http://www.w3.org/2000/svg" version="1.1"
-    viewBox="0 0 150 150"
+    viewBox="0 0 300 150"
     preserveAspectRatio="xMidYMid slice"
-    style="width:500px; height:500px; position:absolute; top:0; left:0; z-index:-1;"> 
+    style="width:1000px; height:500px; position:absolute; top:0; left:0; z-index:-1;"> 
 
     <text font-family="Helvetica" font-size="5" fill="White" id="txt"></text>
 
-    <g id="w"></g>
+    <g id="w" transform="translate(50 10)"></g>
     <g id="g"></g>
     <polygon id="t" points="5,0 10,8.66 0,8.66" />
+
+    <polygon id="p" points="0,8.66 5,0 7.288,5" fill="#757575" />
+    <g id="r">
+      <rect height="8.66" width="100" fill="#555" x="5" />
+      <polygon points="0,8.66 5,0 5,8.66" fill="#555" />
+    </g>
   </svg>
 </body>
 <script type="text/javascript">
@@ -32,6 +38,6 @@
     {label:'Sunday',  high:81,low:57},
     {label:'Monday',  high:80,low:57},
     {label:'Tuesday', high:80,low:57}
-  ]);
+  ], 'Cupertino, CA');
 </script>
 </html>

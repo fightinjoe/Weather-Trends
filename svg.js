@@ -1,4 +1,5 @@
-var M = Math;
+var M = Math,
+    r = 8.66;
 
 var xs = {
   /*== DOM Manipulation ==*/
@@ -6,6 +7,16 @@ var xs = {
   append : function( elt ) {
     this.appendChild( elt );
     return this;
+  },
+
+  prepend : function( elt ) {
+    this.insertBefore(elt,this.firstChild);
+    return this;
+  },
+
+  // parent node
+  dad : function() {
+    return x(this.parentNode);
   },
 
   clone : function() {
@@ -38,7 +49,7 @@ var xs = {
 
   trans : function(type) {
     var ap = Array.prototype;
-    t = (this.attr('transform') || '').replace( new RegExp(type+'\([^)]*\)'),'');
+    t = (this.attr('transform') || '').replace( new RegExp(type+'\\\(.*?\\\)'),'');
     var val = t + ' ' + type + '(' + ap.join.call(ap.slice.call(arguments,1), ' ') + ')';
     this.attr('transform', val);
     return this;
@@ -53,14 +64,10 @@ var xs = {
   },
 
   bg : function(color) {
-    return this.attr('fill','#'+color.toString());
+    return this.attr('fill',color.toString());
   },
 
   text : function(txt) {
-//    var cs = this.childNodes;
-//    for(var i=0;i<cs.length;i++) {
-//      this.removeChild(cs[i]);
-//    }
     this.appendChild(document.createTextNode(txt));
     return this;
   },
@@ -71,7 +78,45 @@ var xs = {
 
   hide : function() {
     this.style.display = 'none';
+  },
+
+  remove : function() {
+    this.dad().removeChild(this);
+    return this;
+  },
+
+  /*== Properties ==*/
+
+/*
+  // returns the {x,y} offset position of the current element relative
+  // to the relativeTo element
+  pos : function( relativeTo ) {
+    return relativeTo.pt( this.cbox().left, this.cbox().top );
+  },
+
+  bbox : function() { return this.getBBox(); },
+
+  cbox : function() { return this.getBoundingClientRect(); },
+
+  // converts a Client coordinate to a vector unit offset relative
+  // to the current item
+  pt : function(x,y) {
+    var b = this.bbox(), c = this.cbox();
+    var ratio = { x: c.width/b.width, y: c.height/b.height };
+    console.log([c.width, b.width, c.height, b.height]);
+
+    // Client side difference, converted to vector units, then adjusted for offset
+    return {
+      x: (x-c.left) / ratio.x + b.x,
+      y: (y-c.top)  / ratio.y + b.y
+    };
+  },
+
+  bind : function(event,fn) {
+    this.addEventListener(event,fn,false);
+    return this;
   }
+*/
 };
 
 var x = function(id) {
@@ -81,6 +126,7 @@ var x = function(id) {
     for(var key in xs) {
       id[key] = xs[key];
     }
+
     return id;
   }
 };
@@ -138,7 +184,7 @@ var C = function( opts ) {
   this.toString = function() {
     var t = self.A.tpl, tt;
     function _h(i) { tt = M.floor(t[i]).toString(16); return (('0'+tt).substr(tt.length-1,2)); }
-    return _h(0) + _h(1) + _h(2);
+    return '#'+_h(0) + _h(1) + _h(2);
   };
 
   (function(){init(opts);}());
@@ -167,16 +213,17 @@ var _GRADIENTS = C.array([
   '8C0009'    // maroon   110F
 ], 12);
 
-var Temp = function(opts) {
+var Temp = function(opts,label) {
   var self = this;
 
   self.A = {
     o : 1 // orientation
   };
 
-  var _initialize = function( opts ) {
+  var _initialize = function( opts, label ) {
     self.A.low  = _round(opts.low,-1);
     self.A.high = _round(opts.high,1);
+    if(opts.mark) { self.A.cur = _round(opts.mark,1); }
 
     self.A.min = _round(opts.min || opts.low,-1,10);
     self.A.max = _round(opts.max || opts.high,1,10);
@@ -184,10 +231,14 @@ var Temp = function(opts) {
     self.A.off  = (opts.off || 0)*16;
 
     self.A.levels = {
-      c : (self.A.max - self.A.min)/10*3,
+      d : (self.A.max - self.A.min)/10*3,  // delta between min and max, converted to number of triangle groups
       h : (self.A.max-self.A.high)/10*6,   // index of the high triangle, counting from the top
-      l : (self.A.max-self.A.low)/10*6-1
-    }
+      l : (self.A.max-self.A.low)/10*6-1  //
+    };
+    // the index for the current temp
+    if(opts.mark) {self.A.levels.c = M.floor((self.A.max-self.A.cur)/10*3) }
+
+    self.A.label = label
 
     self.A.cI = (self.A.min)*.6+16; // starting index to ref. colors from
 
@@ -214,30 +265,50 @@ var Temp = function(opts) {
     var temp = g.clone(); w.append(temp);
     if( self.A.off ) { temp.move(self.A.off,0); }
 
+    temp._offset = self.A.off;
+
     // create a level group
     var l0 = g.clone(),
-        t1 = t.clone().move(5,0).turn(180,5,4.33),
+        t1 = t.clone().move(5,0).turn(180,5,r/2),
         t2 = t.clone(),
         lv = self.A.levels,
-        c  = lv.c,
+        d  = lv.d,
         l,j;
 
     l0.append(t1).append(t2);
 
     // draw from the top dow
-    for(var i=0;i<c;i++) {
+    for(var i=0;i<d;i++) {
       l = l0.clone();
       temp.append(l);
-      l.move((c-i-1)*5,8.66*i);
-      j = c-2*i-1+self.A.cI;
-      l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j+1]   : new C({hex:'000000'}));
-      l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j] : new C({hex:'2A2A2A'}));
+      l.move((d-i-1)*5,r*i);
+      j = d-2*i+self.A.cI;
+      l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j] : '#000');
+      l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j-1]   : '#2A2A2A');
+
+      // mark the current temperature
+      if(self.A.levels.c == i) {
+        l.append(
+          x('p').move(-2,0)
+        ).prepend(
+          x('r').move(-2,0)
+        );
+      }
 
       // draw the temp axis if force
       if(drawTemps && (i%3==2)) {
         g = txt.clone();
-        g.text( (self.A.max-(i+1)/3*10) + '°').move(15,8.66);
+        g.text( (self.A.max-(i+1)/3*10) + '°').move(15,r);
         l.append(g);
+      }
+
+      if(i==d-1 && self.A.label) {
+        g = txt.clone();
+        g.text(self.A.label);
+        l.append( g.move(-15,10).turn(-60,0,0).attr({
+          'font-size':'15px',
+          'font-style':'italic'
+        }) );
       }
     }
 
@@ -247,11 +318,11 @@ var Temp = function(opts) {
     l.append(t);
   };
 
-  (function(){_initialize(opts)}());
+  (function(){_initialize(opts,label)}());
 };
 
-var Chart = function(temps) {
-  var _initialize = function(temps) {
+var Chart = function(temps,label) {
+  var _initialize = function(temps, label) {
     var o,i,
         l = temps[0].low,
         h = temps[0].high;
@@ -265,12 +336,14 @@ var Chart = function(temps) {
       o.off = i;
       o.min = l;
       o.max = h;
+
       if(i==temps.length-1) { o.axis=true; }
-      new Temp( o );
+
+      new Temp( o, i==0 ? label : null );
     }
   };
 
-  (function(){_initialize(temps)}());
+  (function(){_initialize(temps,label)}());
 }
 
 var YQL = {
@@ -349,3 +422,55 @@ var YQL = {
     })
   }
 };
+
+/*
+
+function strokeRed(e) {
+  console.log(e);
+  var pointer = x('p'),
+         rect = x('r'),
+      wrapper = x('w');
+
+  wrapper.append(pointer).prepend(rect);
+
+  var pt = wrapper.pt(e.clientX, e.clientY),
+      qt = this.pt(e.clientX, e.clientY),
+      xx = pt.x - qt.x - 4 + ((qt.y-r)*5/-r),
+      yy = pt.y - r/2;
+
+  pointer.move( xx, yy );
+
+  rect.move( xx, yy );
+  
+  x(rect.childNodes[1]).attr('width', wrapper.bbox().width - x(this).pos(wrapper).x - 15);
+}
+
+function strokeNone(e) {}
+
+function strokeRed(e) {
+  var pointer = x('p');
+
+  //console.log([e,this]);
+  //x(this).attr({stroke:'Red','stroke-width':1});
+
+  var p = this.dad();
+
+  function _h(e) {return e.move(-1,1); } //.trans('scale',0.8); }
+
+  // place the pointer inside the group
+  p.append(_h(pointer));
+
+  // place the rectangle behind the group
+  p.prepend(_h(x('r')));
+
+  var r = x('r'),
+      rr = x(r.childNodes[1]),
+      w = x('w');
+  console.log([w,w.getWidth(), r, r.pos(w).x]);
+  //rr.attr('width', (w.getWidth() - r.pos(w).x));
+}
+
+function strokeNone(e) {
+  x(this).attr({stroke:'transparent', 'stroke-width':0});
+}
+*/
