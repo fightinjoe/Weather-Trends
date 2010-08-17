@@ -274,7 +274,7 @@ var Temp = function(opts,label) {
         t2 = t.clone(),
         lv = self.A.levels,
         d  = lv.d,
-        l,j;
+        l,j,off;
 
     l0.append(t1).append(t2);
 
@@ -282,18 +282,15 @@ var Temp = function(opts,label) {
     for(var i=0;i<d;i++) {
       l = l0.clone();
       temp.append(l);
-      l.move((d-i-1)*5,r*i);
+      l._offset=(d-i-1)*5;
+      l.move(l._offset,r*i);
       j = d-2*i+self.A.cI;
       l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j] : '#000');
       l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j-1]   : '#2A2A2A');
 
       // mark the current temperature
       if(self.A.levels.c == i) {
-        l.append(
-          x('p').move(-2,0)
-        ).prepend(
-          x('r').move(-2,0)
-        );
+        l.attr('id','cur');
       }
 
       // draw the temp axis if force
@@ -342,6 +339,34 @@ var Chart = function(temps,label) {
 
       new Temp( o, i==0 ? label : null );
     }
+
+    // after adding all the temps, update the current temp flag
+    var rr = x('r'),
+      rect = x(rr.getElementsByTagName('rect')[0]),
+      grad = rect.clone(),
+         w = x('w'),
+         l = x('cur'),
+        wB = w.getBBox(),
+     width = wB.width - (M.abs(wB.x) + 16 + l._offset);
+
+    console.log([width, wB.width, wB.x, 16, l._offset]);
+
+    l.append(
+      x('p').move(-2,0)
+    ).prepend(
+      rr.move(-2,0)
+    );
+
+    rect.attr('width',width);
+    rr.append(
+      grad.move( width-0.1, 0 ).attr({
+        'style':'fill:url(#gr)',
+        'width':40
+      })
+    );
+    var t = x('txt').clone().text('Current Temp: '+temps[0].mark+'°');
+    rr.append(t.move(width+20,6));
+    
   };
 
   (function(){_initialize(temps,label)}());

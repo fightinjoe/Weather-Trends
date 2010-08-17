@@ -1,0 +1,45 @@
+body {
+  font-family:arial;
+  background:black;
+}
+
+body, ul, li {
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+#wrap {
+  border:5px solid Silver;
+  background:Gray;
+  position:absolute;
+  padding: 10px;
+  opacity:1;
+  -moz-border-radius:10px;
+  -webkit-border-radius:10px;
+  -moz-transition: all 1s ease-in-out;
+  -webkit-transition: all 1s ease-in-out;
+}
+
+#wrap:hover {
+  opacity:0.1;
+  -moz-transform:scale(2);
+  -webkit-transform:scale(2);
+}
+
+input {
+  border:1px solid White;
+  -moz-border-radius:10px;
+  -webkit-border-radius:10px;
+  padding:1px 10px;
+}
+
+ul {
+  margin:1em -10px 0;
+}
+
+li {
+  padding:3px 10px;
+  background:#AAA;
+  color:White;
+}
