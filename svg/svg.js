@@ -336,9 +336,7 @@ var Temp = function(opts,label) {
 
     // Add labels to the bottom
     tx = TX.clone();
-    tx.data = label;
-    tx.attr('text-anchor','end').turn(300,0,0).move(-8,10);
-    console.log(tx);
+    tx.text(label).attr('text-anchor','end').turn(300,0,0).move(-8,10);
     level.append(tx);
   };
 
@@ -368,16 +366,18 @@ var chart = function(temps, label) {
   }
 
   // after adding all the temps, update the current temp flag
-  var rr = x('r'),
-    rect = x(rr.getElementsByTagName('rect')[0]),
+  var rr = R.clone(),
+       p = x(rr.firstChild),
+    rect = x(rr.childNodes[1]),
     grad = rect.clone(),
-       w = x('w'),
-       l = x('cur'),
-      wB = w.getBBox(),
-   width = wB.width - (M.abs(wB.x) + 16 + l._offset);
+   level = x('cur'),
+      wB = W.getBBox(),
+   width = wB.width - (M.abs(wB.x) + 16 + level._offset);
 
-  l.append(
-    x('p').move(-2,0)
+  console.log(p);
+
+  level.append(
+    p.move(-2,0)
   ).prepend(
     rr.move(-2,0)
   );
@@ -389,7 +389,7 @@ var chart = function(temps, label) {
       'width':40
     })
   );
-  var t = x('txt').clone().text('Current Temp: '+temps[0].mark+'°');
+  var t = TX.clone().text('Current Temp: '+temps[0].mark+'°');
   rr.append(t.move(width+20,6));
   
 };
@@ -440,9 +440,7 @@ var YQL = {
     temps[0].mark = parseInt(cur.temp_f);
 
     // update the name of the city on the page
-    x('w').parentNode.appendChild(x('r'));
-    x('w').parentNode.appendChild(x('p'));
-    x('w').empty();
+    W.empty();
 
     // reprint the canvas
     chart(temps, text);
