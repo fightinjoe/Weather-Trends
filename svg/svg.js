@@ -307,6 +307,7 @@ var Temp = function(opts,label) {
         l.append(g);
       }
 
+      // city label
       if(i==d-1 && self.A.label) {
         g = txt.clone();
         g.text(self.A.label);
@@ -326,71 +327,71 @@ var Temp = function(opts,label) {
   (function(){_initialize(opts,label)}());
 };
 
-var Chart = function(temps,label) {
-  var _initialize = function(temps, label) {
-    var o,i,
-        l = temps[0].low,
-        h = temps[0].high;
-    for(i=0;i<temps.length;i++) {
-      l = M.min(l,temps[i].low);
-      h = M.max(h,temps[i].high);
-    }
+var chart = function(temps, label) {
+  var o,i,
+      l = temps[0].low,
+      h = temps[0].high;
+  for(i=0;i<temps.length;i++) {
+    l = M.min(l,temps[i].low);
+    h = M.max(h,temps[i].high);
+  }
 
-    for(i=0;i<temps.length;i++) {
-      o = temps[i];
-      o.off = i;
-      o.min = l;
-      o.max = h;
+  for(i=0;i<temps.length;i++) {
+    o = temps[i];
+    o.off = i;
+    o.min = l;
+    o.max = h;
 
-      if(i==temps.length-1) { o.axis=true; }
+    if(i==temps.length-1) { o.axis=true; }
 
-      new Temp( o, i==0 ? label : null );
-    }
+    new Temp( o, i==0 ? label : null );
+  }
 
-    // after adding all the temps, update the current temp flag
-    var rr = x('r'),
-      rect = x(rr.getElementsByTagName('rect')[0]),
-      grad = rect.clone(),
-         w = x('w'),
-         l = x('cur'),
-        wB = w.getBBox(),
-     width = wB.width - (M.abs(wB.x) + 16 + l._offset);
+  // after adding all the temps, update the current temp flag
+  var rr = x('r'),
+    rect = x(rr.getElementsByTagName('rect')[0]),
+    grad = rect.clone(),
+       w = x('w'),
+       l = x('cur'),
+      wB = w.getBBox(),
+   width = wB.width - (M.abs(wB.x) + 16 + l._offset);
 
-    console.log([width, wB.width, wB.x, 16, l._offset]);
+  l.append(
+    x('p').move(-2,0)
+  ).prepend(
+    rr.move(-2,0)
+  );
 
-    l.append(
-      x('p').move(-2,0)
-    ).prepend(
-      rr.move(-2,0)
-    );
-
-    rect.attr('width',width);
-    rr.append(
-      grad.move( width-0.1, 0 ).attr({
-        'style':'fill:url(#gr)',
-        'width':40
-      })
-    );
-    var t = x('txt').clone().text('Current Temp: '+temps[0].mark+'°');
-    rr.append(t.move(width+20,6));
-    
-  };
-
-  (function(){_initialize(temps,label)}());
-}
+  rect.attr('width',width);
+  rr.append(
+    grad.move( width-0.1, 0 ).attr({
+      'style':'fill:url(#gr)',
+      'width':40
+    })
+  );
+  var t = x('txt').clone().text('Current Temp: '+temps[0].mark+'°');
+  rr.append(t.move(width+20,6));
+  
+};
 
 var YQL = {
-  api   : "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=",
+  api   : "http://api.wunderground.com/auto/wui/geo/",
+  svcF  : "ForecastXML",
+  svcC  : "WXCurrentObXML",
   url   : "http://query.yahooapis.com/v1/public/yql?format=json&q=",
   query : 'select * from xml where url',
 
+//select * from xml where url="http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=San%20Francisco,%20CA"
+
+
   forecast : function(location ) {
-    var url = YQL.url + escape(YQL.query + '="'+ YQL.api+escape(location) +'"');
-    console.log(url);
+    var u1 = YQL.api+YQL.svcF+"/index.xml?query="+escape(location),
+        u2 = u1.replace(YQL.svcF,YQL.svcC);
+    var url = YQL.url + escape(YQL.query + ' in("'+ [u1,u2].join('","') +'")');
     YQL._query( url, 'YQL.forecastCB');
   },
 
-  cities : function( locations ) {
+/*  cities : function( locations ) {
     var urls = [];
     for(var i in locations) {
       urls.push( YQL.api+escape(locations[i]) )
@@ -398,32 +399,36 @@ var YQL = {
     var url = YQL.url + escape( YQL.query + ' in ("'+urls.join('","')+'")');
     YQL._query( url, 'YQL.citiesCB' );
   },
-
+*/
   forecastCB : function( data ) {
     // parse the data set to create an array of temps for the upcoming week
-
-    var fs = data.query.results.forecast,
+    var res = data.query.results,
+        fs  = res.forecast,
+        cur = res.current_observation,
         f;
 
-    var text = fs.txt_forecast.forecastday[0].fcttext;
+    //var text = fs.txt_forecast.forecastday[0].fcttext;
+    var text = cur.observation_location.city;
 
     fs = fs.simpleforecast.forecastday;
 
     var temps = []
     for(var i in fs) {
       f = fs[i];
-      temps.push( YQL._forecastCollector(f));
+      temps.push(YQL._forecastCollector(f));
     }
+    temps[0].mark = parseInt(cur.temp_f);
 
     // update the name of the city on the page
     x('w').parentNode.appendChild(x('r'));
+    x('w').parentNode.appendChild(x('p'));
     x('w').empty();
 
     // reprint the canvas
-    new Chart(temps, text);
+    chart(temps, text);
   },
 
-  citiesCB : function( data ) {
+/*  citiesCB : function( data ) {
     var fs = data.query.results.forecast,
      temps = [],
          f;
@@ -437,9 +442,9 @@ var YQL = {
     $('.wrapper').remove();
 
     // reprint the canvas
-    new Chart(temps, 'text',{m:-1});
+    chart(temps, 'text',{m:-1});
   },
-
+*/
   _forecastCollector : function( f ) {
     return {
       label: f.date.weekday,
