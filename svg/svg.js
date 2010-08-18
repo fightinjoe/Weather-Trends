@@ -1,6 +1,16 @@
 var M = Math,
     r = 8.66;
 
+var R,W,G,T,TX;
+
+function _setupGlobalVars() {
+  R = x('r'),
+  W = x('w'),
+  G = x('g'),
+  T = x('t'),
+  TX = x('txt');
+}
+
 var xs = {
   /*== DOM Manipulation ==*/
 
@@ -211,6 +221,8 @@ C.array = function( stops, steps ) {
   return out;
 };
 
+C.bw = ['#000','#2A2A2A'];
+
 var _GRADIENTS = C.array([
   '000000',   // black    -10F
   '9363F6',   // purple    10F
@@ -243,8 +255,8 @@ var Temp = function(opts,label) {
     self.A.off  = (opts.off || 0)*16;
 
     self.A.levels = {
-      d : (n - m)/10*3,  // delta between min and max, converted to number of triangle groups
-      h : (n-self.A.high)/10*6,   // index of the high triangle, counting from the top
+      d : (n - m)/10*3,          // delta between min and max, converted to number of triangle groups
+      h : (n-self.A.high)/10*6,  // index of the high triangle, counting from the top
       l : (n-self.A.low)/10*6-1  //
     };
 
@@ -268,55 +280,54 @@ var Temp = function(opts,label) {
   };
 
   var _drawTemp = function( label, drawTemps ) {
-    // create a wrapper
-    var w   = x('w'),
-        g   = x('g'),
-        t   = x('t'),
-        txt = x('txt');
-
     // create a temperature group
-    var temp = g.clone(); w.append(temp);
+    var temp = G.clone(); W.append(temp);
     if( self.A.off ) { temp.move(self.A.off,0); }
 
     temp._offset = self.A.off;
 
     // create a level group
-    var l0 = g.clone(),
-        t1 = t.clone().move(5,0).turn(180,5,r/2),
-        t2 = t.clone(),
-        lv = self.A.levels,
-        d  = lv.d,
-        l,j,off;
+    var pair    = G.clone(),
+        downTri = T.clone().move(5,0).turn(180,5,r/2),
+        upTri   = T.clone(),
+        levels  = self.A.levels,
+        delta   = levels.d,
+        j,g,k,off,level;
 
-    l0.append(t1).append(t2);
+    pair.append(downTri).append(upTri);
 
     // draw from the top dow
-    for(var i=0;i<d;i++) {
-      l = l0.clone();
-      temp.append(l);
-      l._offset=(d-i-1)*5;
-      l.move(l._offset,r*i);
-      j = d-2*i+self.A.cI;
-      l.childNodes[0].bg( (lv.h <= i*2   && i*2   <= lv.l) ? _GRADIENTS[j] : '#000');
-      l.childNodes[1].bg( (lv.h <= i*2+1 && i*2+1 <= lv.l) ? _GRADIENTS[j-1]   : '#2A2A2A');
+    for(var i=0;i<delta;i++) {
+      level = pair.clone();
+      temp.append(level);
+
+      level._offset=(delta-i-1)*5;
+      level.move(level._offset,r*i);
+
+      j = delta-2*i+self.A.cI;
+      for(k=0;k<2;k++) {
+        level.childNodes[k].bg(
+          (levels.h <= i*2+k && i*2+k <= levels.l) ? _GRADIENTS[j-k] : C.bw[k]
+        );
+      }
 
       // mark the current temperature
       if(self.A.levels.c == i) {
-        l.attr('id','cur');
+        level.attr('id','cur');
       }
 
       // draw the temp axis if force
       if(drawTemps && (i%3==2)) {
-        g = txt.clone();
+        g = TX.clone();
         g.text( (self.A.max-(i+1)/3*10) + '°').move(15,r);
-        l.append(g);
+        level.append(g);
       }
 
       // city label
-      if(i==d-1 && self.A.label) {
-        g = txt.clone();
+      if(i==delta-1 && self.A.label) {
+        g = TX.clone();
         g.text(self.A.label);
-        l.append( g.move(-10,10).turn(-60,0,0).attr({
+        level.append( g.move(-10,10).turn(-60,0,0).attr({
           'font-size':'10px',
           'font-style':'italic'
         }) );
@@ -324,15 +335,19 @@ var Temp = function(opts,label) {
     }
 
     // Add labels to the bottom
-    t = txt.clone();
-    t.text(label).attr('text-anchor','end').turn(300,0,0).move(-8,10);
-    l.append(t);
+    tx = TX.clone();
+    tx.data = label;
+    tx.attr('text-anchor','end').turn(300,0,0).move(-8,10);
+    console.log(tx);
+    level.append(tx);
   };
 
   (function(){_initialize(opts,label)}());
 };
 
 var chart = function(temps, label) {
+  _setupGlobalVars();
+
   var o,i,
       l = temps[0].low,
       h = temps[0].high;
@@ -387,7 +402,6 @@ var YQL = {
   query : 'select * from xml where url',
 
 //select * from xml where url="http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=San%20Francisco,%20CA"
-
 
   forecast : function(location ) {
     var u1 = YQL.api+YQL.svcF+"/index.xml?query="+escape(location),
