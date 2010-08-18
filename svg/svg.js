@@ -245,8 +245,8 @@ var Temp = function(opts,label) {
     self.A.high = _round(opts.high,1);
     if(opts.mark) { self.A.cur = _round(opts.mark,1); }
 
-    var m = self.A.min = _round(opts.min || opts.low,-1,10);
-    var n = self.A.max = _round(opts.max || opts.high,1,10);
+    var m = _round(opts.min || opts.low,-1,10);
+    var n = _round(opts.max || opts.high,1,10);
 
     while(n - m < 40) {
       n >= 100 ? m=m-10 : n=n+10;
@@ -263,7 +263,9 @@ var Temp = function(opts,label) {
     // the index for the current temp
     if(opts.mark) {self.A.levels.c = M.floor((n-self.A.cur)/10*3) }
 
-    self.A.label = label
+    self.A.label = label;
+    self.A.min = m;
+    self.A.max = n;
 
     self.A.cI = (m)*.6+16; // starting index to ref. colors from
 
@@ -292,7 +294,7 @@ var Temp = function(opts,label) {
         upTri   = T.clone(),
         levels  = self.A.levels,
         delta   = levels.d,
-        j,g,k,off,level;
+        j,g,k,off,level,inside;
 
     pair.append(downTri).append(upTri);
 
@@ -306,9 +308,9 @@ var Temp = function(opts,label) {
 
       j = delta-2*i+self.A.cI;
       for(k=0;k<2;k++) {
-        level.childNodes[k].bg(
-          (levels.h <= i*2+k && i*2+k <= levels.l) ? _GRADIENTS[j-k] : C.bw[k]
-        );
+        inside = (levels.h <= i*2+k && i*2+k <= levels.l);
+        level.childNodes[k].bg( inside ? _GRADIENTS[j-k] : C.bw[k] );
+        if(!inside) { level.childNodes[k].attr('class','black') }
       }
 
       // mark the current temperature
@@ -333,6 +335,9 @@ var Temp = function(opts,label) {
         }) );
       }
     }
+
+    var t2 = temp.clone(); W.prepend(t2);
+    temp.attr('class','temp');
 
     // Add labels to the bottom
     tx = TX.clone();
@@ -374,8 +379,6 @@ var chart = function(temps, label) {
       wB = W.getBBox(),
    width = wB.width - (M.abs(wB.x) + 16 + level._offset);
 
-  console.log(p);
-
   level.append(
     p.move(-2,0)
   ).prepend(
@@ -391,7 +394,16 @@ var chart = function(temps, label) {
   );
   var t = TX.clone().text('Current Temp: '+temps[0].mark+'°');
   rr.append(t.move(width+20,6));
-  
+
+  // Remove all the black foreground triangles
+  var ts = document.getElementsByClassName('temp'), cs;
+  for(var i=0;i<ts.length;i++) {
+    cs = ts[i].getElementsByClassName('black');
+    for(var j=0;j<cs.length;j++) {
+      cs[j].parentNode.removeChild(cs[j]);
+    }
+  }
+
 };
 
 var YQL = {
