@@ -6,6 +6,7 @@
   <body>
     <div id="wrap">
       <input type="text" />
+      <button>+</button>
       <ul>
         <li>Cupertino, CA</li>
         <li>San Francisco, CA</li>
@@ -22,8 +23,17 @@
         svg.$ = jQuery;
         svg.PW = window; // parent window
 
-        $('li').click(function(){
+        function f(){
           YQL.forecast( this.innerHTML );
+        };
+
+        $('li').click(f);
+
+        $('button').click(function(){
+          var v = $('input').val(),
+             li = $('<li>'+v+'</li>').click(f);
+          $('ul').append(li);
+          YQL.forecast( v );
         });
       },200);
     </script>

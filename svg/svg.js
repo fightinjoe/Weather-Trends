@@ -277,7 +277,7 @@ var Temp = function(opts,label) {
       // draw the temp axis if force
       if(drawTemps && (i%3==2)) {
         g = TX.clone();
-        g.text( (self.A.max-(i+1)/3*10) + '°').move(15,r);
+        g.text( (self.A.max-(i+1)/3*10) + '\u00B0').move(15,r);
         level.append(g);
       }
 
@@ -348,7 +348,7 @@ var chart = function(temps, label) {
       'width':40
     })
   );
-  var t = TX.clone().text('Current Temp: '+temps[0].mark+'°');
+  var t = TX.clone().text('Current Temp: '+temps[0].mark+'\u00B0');
   rr.append(t.move(width+20,6));
 
   // Remove all the black foreground triangles

@@ -13,22 +13,20 @@ body, ul, li, iframe {
 #wrap {
   border:5px solid Silver;
   background:Gray;
-  position:absolute;
   padding: 10px;
   opacity:1;
   -moz-border-radius:10px;
   -webkit-border-radius:10px;
-  -moz-transition: all 1s ease-in-out;
-  -webkit-transition: all 1s ease-in-out;
-  left:230px;
+  -moz-transition: all 0.25s ease-in-out;
+  -webkit-transition: all 0.25s ease-in-out;
   width:300px;
-  top:170px;
+  position:absolute;
+  top:100px;
+  left:-300px;
 }
 
-#wrap.hide {
-  opacity:0;
-  -moz-transform:scale(2);
-  -webkit-transform:scale(2);
+#wrap:hover {
+  left:0;
 }
 
 input {
