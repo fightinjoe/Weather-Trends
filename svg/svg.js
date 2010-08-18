@@ -233,22 +233,27 @@ var Temp = function(opts,label) {
     self.A.high = _round(opts.high,1);
     if(opts.mark) { self.A.cur = _round(opts.mark,1); }
 
-    self.A.min = _round(opts.min || opts.low,-1,10);
-    self.A.max = _round(opts.max || opts.high,1,10);
+    var m = self.A.min = _round(opts.min || opts.low,-1,10);
+    var n = self.A.max = _round(opts.max || opts.high,1,10);
+
+    while(n - m < 40) {
+      n >= 100 ? m=m-10 : n=n+10;
+    }
 
     self.A.off  = (opts.off || 0)*16;
 
     self.A.levels = {
-      d : (self.A.max - self.A.min)/10*3,  // delta between min and max, converted to number of triangle groups
-      h : (self.A.max-self.A.high)/10*6,   // index of the high triangle, counting from the top
-      l : (self.A.max-self.A.low)/10*6-1  //
+      d : (n - m)/10*3,  // delta between min and max, converted to number of triangle groups
+      h : (n-self.A.high)/10*6,   // index of the high triangle, counting from the top
+      l : (n-self.A.low)/10*6-1  //
     };
+
     // the index for the current temp
-    if(opts.mark) {self.A.levels.c = M.floor((self.A.max-self.A.cur)/10*3) }
+    if(opts.mark) {self.A.levels.c = M.floor((n-self.A.cur)/10*3) }
 
     self.A.label = label
 
-    self.A.cI = (self.A.min)*.6+16; // starting index to ref. colors from
+    self.A.cI = (m)*.6+16; // starting index to ref. colors from
 
     _drawTemp( opts.label, opts.axis );
   };
@@ -378,7 +383,7 @@ var YQL = {
   api   : "http://api.wunderground.com/auto/wui/geo/",
   svcF  : "ForecastXML",
   svcC  : "WXCurrentObXML",
-  url   : "http://query.yahooapis.com/v1/public/yql?format=json&q=",
+  url   : "http://query.yahooapis.com/v1/public/yql?diagnostics=true&format=json&q=",
   query : 'select * from xml where url',
 
 //select * from xml where url="http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=San%20Francisco,%20CA"
@@ -408,7 +413,8 @@ var YQL = {
         f;
 
     //var text = fs.txt_forecast.forecastday[0].fcttext;
-    var text = cur.observation_location.city;
+    //var text = cur.observation_location.city;
+    var text = unescape(data.query.diagnostics.url[0].content).split('=')[1].titleCase();
 
     fs = fs.simpleforecast.forecastday;
 
@@ -461,4 +467,10 @@ var YQL = {
       jsonpCallback:cb
     })
   }
+};
+
+String.prototype.titleCase = function() {
+  var s = this.split(' ');
+  for(var i in s) { s[i] = s[i].substr(0,1).toUpperCase() + s[i].substr(1).toLowerCase(); }
+  return s.join(' ');
 };
