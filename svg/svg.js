@@ -1,7 +1,7 @@
 var M = Math,
     r = 8.66;
 
-var R,W,G,T,TX;
+var R,W,G,T,TX,B;
 
 function _setupGlobalVars() {
   R = x('r'),
@@ -52,31 +52,11 @@ var xs = {
         this.attr(k,key[k]);
       }
     } else if(arguments.length == 2) {
-      if( isStyle ) { return this.stile(key,val); }
       this.setAttributeNS(null,key,val);
     } else {
-      return isStyle ? this.stile(key) : this.getAttributeNS(null,key);
+      return this.getAttributeNS(null,key);
     }
     return this;
-  },
-
-  stile : function(key, val) {
-    var stile = this.attr('style'),
-       regexp = new RegExp('(^| )\\s*'+key+'\\s*:\\s*([^;]+);( |$)');
-
-    if(typeof key == 'object') {
-      for(var k in key) {
-        this.stile(k,key[k]);
-      }
-    } else if(arguments.length==2) {
-      // remove style
-      stile = stile.replace( regexp, ' ' ) + ' ';
-
-      // add new style
-      this.attr('style',stile + key + ':' + val + ';');
-    } else {
-      return stile.match( regexp )[2];
-    }
   },
 
   trans : function(type) {
@@ -109,30 +89,6 @@ var xs = {
     while(cs.length>0) {
       this.removeChild(cs[0]);
     }
-  },
-
-  /*== Animations ==*/
-
-  animate : function( prop, val, callback ) {
-    callback = callback || function(){};
-    var duration = 1000,
-            orig = parseFloat(this.attr(prop)),
-           range = val - orig,
-            self = this,
-           start;
-
-    var helper = function() {
-      var time = Date.now();
-      if(time > start+duration) { return callback(self); }
-
-      var newVal = range * (time - start)/duration + orig;
-
-      self.attr(prop, newVal);
-      setTimeout(helper,10);
-    };
-
-    start = Date.now();
-    return helper(Date.now());
   },
 
 };

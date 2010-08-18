@@ -16,15 +16,16 @@
     <iframe src="weather.svg" width="1000" height="500"></iframe>
     <script>
       var svg, YQL;
-      $(document).ready(function(){
+      setTimeout(function(){
         svg = $('iframe')[0].getSVGDocument().defaultView;
         YQL = svg.YQL;
         svg.$ = jQuery;
+        svg.PW = window; // parent window
 
         $('li').click(function(){
           YQL.forecast( this.innerHTML );
         });
-      });
+      },200);
     </script>
   </body>
 </html>
