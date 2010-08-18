@@ -3,7 +3,7 @@ body {
   background:black;
 }
 
-body, ul, li, iframe {
+body, ul, li, iframe,p {
   margin:0;
   padding:0;
   list-style:none;
@@ -12,28 +12,70 @@ body, ul, li, iframe {
 
 #wrap {
   border:5px solid Silver;
+  border-left:none;
   background:Gray;
   padding: 10px;
   opacity:1;
-  -moz-border-radius:10px;
-  -webkit-border-radius:10px;
   -moz-transition: all 0.25s ease-in-out;
   -webkit-transition: all 0.25s ease-in-out;
   width:300px;
   position:absolute;
   top:100px;
-  left:-300px;
+  left:-330px;
+  z-index:2;
 }
 
-#wrap:hover {
+#wrap.show {
   left:0;
+}
+
+p {
+  border:5px solid Silver;
+  border-left:none;
+  position:absolute;
+  right:-45px;
+  top:-5px;
+  width:30px;
+  padding-left:10px;
+  text-align:center;
+  line-height:26px;
+  height:26px;
+  background:Gray;
+  z-index:3;
+  opacity:1;
+  color:White;
+  font-size:140%;
+}
+
+p:hover {
+  opacity:1;
+}
+
+iframe {
+  position:relative;
+  -webkit-transition:all 0.25s ease-in-out;
+}
+
+#wrap.show + iframe {
+  left:50px;
+  opacity:0.3;
 }
 
 input {
   border:1px solid White;
   -moz-border-radius:10px;
   -webkit-border-radius:10px;
+  width:200px;
   padding:1px 10px;
+}
+
+button {
+  border:none;
+  font-weight:bold;
+  color:White;
+  background:none;
+  cursor:pointer;
+  text-decoration:underline;
 }
 
 ul {

@@ -197,6 +197,7 @@ var Temp = function(opts,label) {
   };
 
   var _initialize = function( opts, label ) {
+    self.A.opts = opts;
     self.A.low  = _round(opts.low,-1);
     self.A.high = _round(opts.high,1);
     if(opts.mark) { self.A.cur = _round(opts.mark,1); }
@@ -243,6 +244,8 @@ var Temp = function(opts,label) {
     if( self.A.off ) { temp.move(self.A.off,0); }
 
     temp._offset = self.A.off;
+    //temp._forecast = label + ' - high '+self.A.opts.high+'\u00B0, low '+self.A.opts.low+'\u00B0';
+    temp._forecast = 'high '+self.A.opts.high+'\u00B0, low '+self.A.opts.low+'\u00B0';
 
     // create a level group
     var pair    = G.clone(),
@@ -333,12 +336,15 @@ var chart = function(temps, label) {
     grad = rect.clone(),
    level = x('cur'),
       wB = W.getBBox(),
-   width = wB.width - (M.abs(wB.x) + 16 + level._offset);
+   width = wB.width - (M.abs(wB.x) - 16 + level._offset);
+
+   p.attr('transform','scale(0.8)');
+   rr.attr('transform','scale(0.8)');
 
   level.append(
-    p.move(-2,0)
+    p.move(-2,1)
   ).prepend(
-    rr.move(-2,0)
+    rr.move(-2,1)
   );
 
   rect.attr('width',width);
@@ -348,17 +354,29 @@ var chart = function(temps, label) {
       'width':40
     })
   );
-  var t = TX.clone().text('Current Temp: '+temps[0].mark+'\u00B0');
-  rr.append(t.move(width+20,6));
+  var t = TX.clone().text('currently '+temps[0].mark+'\u00B0');
+  rr.append(
+    t.move(width+20,7).attr({
+      'font-size':'10',
+      'font-style':'italic'
+    })
+  );
 
   // Remove all the black foreground triangles
   var ts = document.getElementsByClassName('temp'), cs;
   for(var i=0;i<ts.length;i++) {
     cs = ts[i].getElementsByClassName('black');
     for(var j=0;j<cs.length;j++) {
-      cs[j].parentNode.removeChild(cs[j]);
+      x(cs[j]).attr('style','display:none');
     }
   }
+
+  // Add the forecast
+  var temp = x(level.parentNode),
+        tt = TX.clone().text( temp._forecast );
+  rr.append(
+    tt.move( rr.getBBox().width-4, 14 ).attr('fill','Gray').attr('text-anchor','end')
+  );
 
 };
 

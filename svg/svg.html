@@ -5,8 +5,9 @@
   </head>
   <body>
     <div id="wrap">
+      <p>+</p>
       <input type="text" />
-      <button>+</button>
+      <button>Add</button>
       <ul>
         <li>Cupertino, CA</li>
         <li>San Francisco, CA</li>
@@ -26,6 +27,8 @@
         function f(){
           YQL.forecast( this.innerHTML );
         };
+
+        $('#wrap').click(function(){ $(this).toggleClass('show'); });
 
         $('li').click(f);
 
