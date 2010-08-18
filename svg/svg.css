@@ -87,3 +87,14 @@ li {
   background:#AAA;
   color:White;
 }
+
+li:hover {
+  background:#BBB;
+}
+
+a {
+  text-decoration:none;
+  color:inherit;
+}
+
+span { float:right; }

@@ -9,36 +9,55 @@
       <input type="text" />
       <button>Add</button>
       <ul>
-        <li>Cupertino, CA</li>
-        <li>San Francisco, CA</li>
-        <li>Los Angeles, CA</li>
       </ul>
     </div>
     <!-- <embed width="1000" height="500" src="svg.xml" type="image/svg+xml" /> -->
     <iframe src="weather.svg" width="1000" height="500"></iframe>
     <script>
-      var svg, YQL;
-      setTimeout(function(){
-        svg = $('iframe')[0].getSVGDocument().defaultView;
-        YQL = svg.YQL;
-        svg.$ = jQuery;
-        svg.PW = window; // parent window
+      function get(key) { return localStorage.getItem(key); }
+      function set(key, value) { localStorage.setItem(key,value); return value; }
 
-        function f(){
-          YQL.forecast( this.innerHTML );
-        };
+      function loc(location) {
+        var li = $('<li>');
+        $('ul').append(
+          li.append( $('<a href="#">'+location+'</a>').click(fn) ).append( $('<span>-</span>').click(rm) )
+        );
+      }
 
-        $('#wrap').click(function(){ $(this).toggleClass('show'); });
+      var svg, f, fn, cs, rm;
+      $(document).ready(function(){
+        setTimeout(function(){
+          svg = $('iframe')[0].getSVGDocument().defaultView;
+          svg.$ = jQuery;
+          svg.PW = window; // parent window
+          f = svg.YQL.forecast;
+          fn = function(){ f(this.innerHTML);return false; };
 
-        $('li').click(f);
+          rm = function() {
+            var v = $(this).prev().html();
+            $(this).parent().remove();
+            cs = cs.join(';').replace(new RegExp('(^|;)'+v+'(;|$)'),'').split(';');
+            set('ws',cs.join(';'));
+          };
 
-        $('button').click(function(){
-          var v = $('input').val(),
-             li = $('<li>'+v+'</li>').click(f);
-          $('ul').append(li);
-          YQL.forecast( v );
-        });
-      },200);
+          cs = (get('ws') || set('ws','Los Angeles, CA;New York, NY;Chicago, IL')).split(';');
+          for(var i=0;i<cs.length;i++) {
+            loc(cs[i]);
+          };
+
+          $('p').click(function(){ $('#wrap').toggleClass('show'); });
+
+          $('button').click(function(){
+            var v = $('input').val();
+            loc( v );
+            set('ws', get('ws')+';'+v);
+            f( v );
+          });
+
+          svg.glob();
+          f( get('w') || cs[0] );
+        },500);
+      });
     </script>
   </body>
 </html>

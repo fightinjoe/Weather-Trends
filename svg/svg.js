@@ -3,7 +3,7 @@ var M = Math,
 
 var R,W,G,T,TX,B;
 
-function _setupGlobalVars() {
+function glob() {
   R = x('r'),
   W = x('w'),
   G = x('g'),
@@ -308,8 +308,6 @@ var Temp = function(opts,label) {
 };
 
 var chart = function(temps, label) {
-  _setupGlobalVars();
-
   var o,i,
       l = temps[0].low,
       h = temps[0].high;
@@ -349,7 +347,7 @@ var chart = function(temps, label) {
 
   rect.attr('width',width);
   rr.append(
-    grad.move( width-0.1, 0 ).attr({
+    grad.move( width-0.2, 0 ).attr({
       'style':'fill:url(#gr)',
       'width':40
     })
@@ -393,7 +391,7 @@ var YQL = {
     var u1 = YQL.api+YQL.svcF+"/index.xml?query="+escape(location),
         u2 = u1.replace(YQL.svcF,YQL.svcC);
     var url = YQL.url + escape(YQL.query + ' in("'+ [u1,u2].join('","') +'")');
-    YQL._query( url, 'YQL.forecastCB');
+    YQL._query( url, 'svg.YQL.forecastCB');
   },
 
 /*  cities : function( locations ) {
@@ -428,8 +426,10 @@ var YQL = {
     // update the name of the city on the page
     W.empty();
 
+    PW.set('w',text);
     // reprint the canvas
     chart(temps, text);
+    PW.$('.show').removeClass('show');
   },
 
 /*  citiesCB : function( data ) {
