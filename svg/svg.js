@@ -245,7 +245,7 @@ var Temp = function(opts,label) {
 
     temp._offset = self.A.off;
     //temp._forecast = label + ' - high '+self.A.opts.high+'\u00B0, low '+self.A.opts.low+'\u00B0';
-    temp._forecast = 'high '+self.A.opts.high+'\u00B0, low '+self.A.opts.low+'\u00B0';
+    temp._f4 = 'high '+self.A.opts.high+'\u00B0, low '+self.A.opts.low+'\u00B0';
 
     // create a level group
     var pair    = G.clone(),
@@ -328,87 +328,90 @@ var chart = function(temps, label) {
   }
 
   // after adding all the temps, update the current temp flag
-  var rr = R.clone(),
-       p = x(rr.firstChild),
-    rect = x(rr.childNodes[1]),
-    grad = rect.clone(),
-   level = x('cur'),
-      wB = W.getBBox(),
-   width = wB.width - (M.abs(wB.x) - 16 + level._offset);
+  try{
+    var rr = R.clone(),
+         p = x(rr.firstChild),
+      rect = x(rr.childNodes[1]),
+      grad = rect.clone(),
+     level = x('cur'),
+        wB = W.getBBox(),
+     width = wB.width - (M.abs(wB.x) - 16 + level._offset);
 
-   p.attr('transform','scale(0.8)');
-   rr.attr('transform','scale(0.8)');
+     p.attr('transform','scale(0.8)');
+     rr.attr('transform','scale(0.8)');
 
-  level.append(
-    p.move(-2,1)
-  ).prepend(
-    rr.move(-2,1)
-  );
+    level.append(
+      p.move(-2,1)
+    ).prepend(
+      rr.move(-2,1)
+    );
 
-  rect.attr('width',width);
-  rr.append(
-    grad.move( width-0.2, 0 ).attr({
-      'style':'fill:url(#gr)',
-      'width':40
-    })
-  );
-  var t = TX.clone().text('currently '+temps[0].mark+'\u00B0');
-  rr.append(
-    t.move(width+20,7).attr({
-      'font-size':'10',
-      'font-style':'italic'
-    })
-  );
+    rect.attr('width',width);
+    rr.append(
+      grad.move( width-0.2, 0 ).attr({
+        'style':'fill:url(#gr)',
+        'width':40
+      })
+    );
+    var t = TX.clone().text('currently '+temps[0].mark+'\u00B0');
+    rr.append(
+      t.move(width+20,7).attr({
+        'font-size':'10',
+        'font-style':'italic'
+      })
+    );
 
-  // Remove all the black foreground triangles
-  var ts = document.getElementsByClassName('temp'), cs;
-  for(var i=0;i<ts.length;i++) {
-    cs = ts[i].getElementsByClassName('black');
-    for(var j=0;j<cs.length;j++) {
-      x(cs[j]).attr('style','display:none');
+    // Remove all the black foreground triangles
+    var ts = document.getElementsByClassName('temp'), cs;
+    for(var i=0;i<ts.length;i++) {
+      cs = ts[i].getElementsByClassName('black');
+      for(var j=0;j<cs.length;j++) {
+        x(cs[j]).attr('style','display:none');
+      }
     }
-  }
 
-  // Add the forecast
-  var temp = x(level.parentNode),
-        tt = TX.clone().text( temp._forecast );
-  rr.append(
-    tt.move( rr.getBBox().width-4, 14 ).attr('fill','Gray').attr('text-anchor','end')
-  );
+    // Add the forecast
+    var temp = x(level.parentNode),
+          tt = TX.clone().text( temp._f4 );
+    rr.append(
+      tt.move( rr.getBBox().width-4, 14 ).attr('fill','Gray').attr('text-anchor','end')
+    );
+  } catch(err) {}
 
 };
 
-var YQL = {
+var Y = {
   api   : "http://api.wunderground.com/auto/wui/geo/",
   svcF  : "ForecastXML",
   svcC  : "WXCurrentObXML",
   url   : "http://query.yahooapis.com/v1/public/yql?diagnostics=true&format=json&q=",
   query : 'select * from xml where url',
+      p : "/index.xml?query=",
 
 //select * from xml where url="http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=San%20Francisco,%20CA"
 
-  forecast : function(location ) {
-    var u1 = YQL.api+YQL.svcF+"/index.xml?query="+escape(location),
-        u2 = u1.replace(YQL.svcF,YQL.svcC);
-    var url = YQL.url + escape(YQL.query + ' in("'+ [u1,u2].join('","') +'")');
-    YQL._query( url, 'svg.YQL.forecastCB');
+  f4 : function(location ) {
+    var u1 = Y.api+Y.svcF+Y.p+escape(location),
+        u2 = u1.replace(Y.svcF,Y.svcC);
+    var url = Y.url + escape(Y.query + ' in("'+ [u1,u2].join('","') +'")');
+    Y._query( url, 'svg.Y.f4CB');
   },
 
-/*  cities : function( locations ) {
+  cities : function( locations ) {
     var urls = [];
     for(var i in locations) {
-      urls.push( YQL.api+escape(locations[i]) )
+      urls.push( Y.api+Y.svcF+Y.p+escape(locations[i]) )
     }
-    var url = YQL.url + escape( YQL.query + ' in ("'+urls.join('","')+'")');
-    YQL._query( url, 'YQL.citiesCB' );
+    var url = Y.url + escape( Y.query + ' in ("'+urls.join('","')+'")');
+    Y._query( url, 'svg.Y.citiesCB' );
   },
-*/
-  forecastCB : function( data ) {
+
+  f4CB : function( data ) {
     // parse the data set to create an array of temps for the upcoming week
     var res = data.query.results,
         fs  = res.forecast,
         cur = res.current_observation,
-        f;
+        f,h,cs;
 
     //var text = fs.txt_forecast.forecastday[0].fcttext;
     //var text = cur.observation_location.city;
@@ -419,7 +422,7 @@ var YQL = {
     var temps = []
     for(var i in fs) {
       f = fs[i];
-      temps.push(YQL._forecastCollector(f));
+      temps.push(Y._f4C(f));
     }
     temps[0].mark = parseInt(cur.temp_f);
 
@@ -432,24 +435,29 @@ var YQL = {
     PW.$('.show').removeClass('show');
   },
 
-/*  citiesCB : function( data ) {
+  citiesCB : function( data ) {
     var fs = data.query.results.forecast,
      temps = [],
-         f;
+         f, cz;
 
     for(var i in fs) {
       f = fs[i].simpleforecast.forecastday[0];
-      temps.push( YQL._forecastCollector(f));
+      h = Y._f4C(f);
+      cz= PW.cz();
+      h.label = cz[i];
+      temps.push( h );
     }
 
     // update the name of the city on the page
     $('.wrapper').remove();
 
     // reprint the canvas
-    chart(temps, 'text',{m:-1});
+    W.empty();
+    chart(temps, 'Multi-city');
+    PW.$('.show').removeClass('show');
   },
-*/
-  _forecastCollector : function( f ) {
+
+  _f4C : function( f ) {
     return {
       label: f.date.weekday,
       high : f.high.fahrenheit,
@@ -458,6 +466,7 @@ var YQL = {
   },
 
   _query : function(url,cb) {
+    console.log(url);
     $.ajax({
       url:url,
       dataType:'jsonp',

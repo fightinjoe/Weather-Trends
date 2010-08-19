@@ -56,10 +56,10 @@ iframe {
   -webkit-transition:all 0.25s ease-in-out;
 }
 
-span { padding-right:8px; }
-span+span { display:none; }
-.show span { display:none; }
-.show span+span { display:block; }
+p span { padding-right:8px; }
+p span+span { display:none; }
+.show p span { display:none; }
+.show p span+span { display:block; }
 
 #wrap.show + iframe {
   left:50px;

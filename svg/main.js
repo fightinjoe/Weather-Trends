@@ -8,13 +8,21 @@ function loc(location) {
   );
 }
 
+function cz() {
+  var ci = [];
+   $('li:lt(6) a').each(function(){
+     ci.push(this.innerHTML);
+   });
+   return ci;
+}
+
 var svg, f, fn, cs, rm;
 $(document).ready(function(){
   setTimeout(function(){
     svg = $('iframe')[0].getSVGDocument().defaultView;
     svg.$ = jQuery;
     svg.PW = window; // parent window
-    f = svg.YQL.forecast;
+    f = svg.Y.f4;
     fn = function(){ f(this.innerHTML);return false; };
 
     rm = function() {
@@ -31,11 +39,15 @@ $(document).ready(function(){
 
     $('p').click(function(){ $('#wrap').toggleClass('show'); });
 
-    $('button').click(function(){
+    $('button:first').click(function(){
       var v = $('input').val();
       loc( v );
       set('ws', get('ws')+';'+v);
       f( v );
+    });
+
+    $('button:last').click(function(){
+      svg.Y.cities(cz());
     });
 
     svg.glob();
