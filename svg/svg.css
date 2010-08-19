@@ -56,6 +56,11 @@ iframe {
   -webkit-transition:all 0.25s ease-in-out;
 }
 
+span { padding-right:8px; }
+span+span { display:none; }
+.show span { display:none; }
+.show span+span { display:block; }
+
 #wrap.show + iframe {
   left:50px;
   opacity:0.3;
@@ -97,4 +102,7 @@ a {
   color:inherit;
 }
 
-span { float:right; }
+span {
+  float:right;
+  cursor:pointer;
+}

@@ -412,7 +412,7 @@ var YQL = {
 
     //var text = fs.txt_forecast.forecastday[0].fcttext;
     //var text = cur.observation_location.city;
-    var text = unescape(data.query.diagnostics.url[0].content).split('=')[1].titleCase();
+    var text = tCase(unescape(data.query.diagnostics.url[0].content).split('=')[1]);
 
     fs = fs.simpleforecast.forecastday;
 
@@ -467,8 +467,8 @@ var YQL = {
   }
 };
 
-String.prototype.titleCase = function() {
-  var s = this.split(' ');
+tCase = function(s) {
+  var s = s.split(' ');
   for(var i in s) { s[i] = s[i].substr(0,1).toUpperCase() + s[i].substr(1).toLowerCase(); }
   return s.join(' ');
 };
