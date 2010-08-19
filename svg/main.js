@@ -42,6 +42,7 @@ $(document).ready(function(){
     $('button:first').click(function(){
       var v = $('input').val();
       loc( v );
+      $('input').val('');
       set('ws', get('ws')+';'+v);
       f( v );
     });
